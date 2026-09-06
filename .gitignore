@@ -11,3 +11,6 @@ next-env.d.ts
 
 .DS_Store
 npm-debug.log*
+
+# выгрузки скрипта сбора из 2ГИС
+scripts/dgis/*.csv
