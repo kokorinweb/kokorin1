@@ -1,0 +1,31 @@
+{
+  "name": "osteria-bellini",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Сайт итальянского ресторана с корзиной, ИИ-помощником и Telegram-ботом",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "bot": "tsx --env-file-if-exists=.env.local bot/dev.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
+    "grammy": "^1.39.1",
+    "next": "^16.3.4",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
+    "@types/node": "^22.18.1",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "tailwindcss": "^4.1.13",
+    "tsx": "^4.23.13",
+    "typescript": "^5.9.2"
+  }
+}

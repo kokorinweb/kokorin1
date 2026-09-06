@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #fbf7f0;
+  --color-cream-dark: #f2ebe0;
+  --color-ink: #221d17;
+  --color-ink-soft: #5c534a;
+  --color-basil: #2f5d3f;
+  --color-basil-dark: #23472f;
+  --color-terracotta: #b6482f;
+  --color-terracotta-soft: #e8d3cb;
+  --color-gold: #c8912f;
+
+  --font-display: var(--font-serif), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Тонкая «бумажная» текстура фона — дешевле картинки и не грузит сеть. */
+.paper {
+  background-image:
+    radial-gradient(circle at 15% 20%, rgba(182, 72, 47, 0.05), transparent 45%),
+    radial-gradient(circle at 85% 10%, rgba(47, 93, 63, 0.06), transparent 40%);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rise {
+  animation: rise 0.28s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rise {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
