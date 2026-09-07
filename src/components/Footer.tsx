@@ -1,65 +1,99 @@
 import Link from "next/link";
-import { RESTAURANT } from "@/lib/restaurant";
+import { Logo } from "./Logo";
+import { INSTAGRAM_NOTE, RESTAURANT, SOCIALS } from "@/lib/restaurant";
+
+const COLUMNS = [
+  {
+    title: "Ресторан",
+    links: [
+      { href: "/menu", label: "Меню" },
+      { href: "/booking", label: "Бронирование" },
+      { href: "/#about", label: "О ресторане" },
+      { href: "/#chef", label: "Шеф-повар" },
+    ],
+  },
+  {
+    title: "Гостям",
+    links: [
+      { href: "/#events", label: "Акции и события" },
+      { href: "/#sets", label: "Сеты" },
+      { href: "/#certificates", label: "Сертификаты" },
+      { href: "/#contacts", label: "Контакты" },
+    ],
+  },
+];
 
 export function Footer() {
   return (
-    <footer id="contacts" className="mt-24 border-t border-cream-dark bg-cream-dark/50">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-3">
-        <div>
-          <div className="display text-2xl">
-            <span className="text-basil">Osteria</span> <span className="text-terracotta">Bellini</span>
+    <footer className="border-t border-line bg-ink-2">
+      <div className="mx-auto max-w-6xl px-5 py-16 sm:px-8">
+        <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
+          <div>
+            <Logo />
+            <p className="mt-5 max-w-xs text-sm leading-relaxed text-text-dim">
+              {RESTAURANT.tagline[0].toUpperCase() + RESTAURANT.tagline.slice(1)}. Работаем
+              с {RESTAURANT.since} года.
+            </p>
           </div>
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
-            {RESTAURANT.tagline}. Работаем с 2014 года, тесто ставим каждое утро, пасту катаем
-            вручную.
-          </p>
-        </div>
 
-        <div className="text-sm">
-          <h3 className="display text-lg">Контакты</h3>
-          <ul className="mt-3 space-y-2 text-ink-soft">
-            <li>{RESTAURANT.address}</li>
-            <li>{RESTAURANT.metro}</li>
-            <li>
-              <a className="hover:text-basil" href={`tel:${RESTAURANT.phoneHref}`}>
-                {RESTAURANT.phone}
-              </a>
-            </li>
-            <li>
-              <a className="hover:text-basil" href={`mailto:${RESTAURANT.email}`}>
-                {RESTAURANT.email}
-              </a>
-            </li>
-            <li>
-              <a className="hover:text-basil" href={RESTAURANT.telegram}>
-                Наш Telegram-бот
-              </a>
-            </li>
-          </ul>
-        </div>
+          {COLUMNS.map((column) => (
+            <nav key={column.title} aria-label={column.title}>
+              <p className="label text-text-faint">{column.title}</p>
+              <ul className="mt-4 space-y-2.5">
+                {column.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className="text-[0.9375rem] text-text-dim transition-colors hover:text-shu"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+          ))}
 
-        <div className="text-sm">
-          <h3 className="display text-lg">Часы работы</h3>
-          <ul className="mt-3 space-y-2 text-ink-soft">
-            {RESTAURANT.hours.map((row) => (
-              <li key={row.days} className="flex justify-between gap-4">
-                <span>{row.days}</span>
-                <span className="tabular-nums">{row.time}</span>
+          <div>
+            <p className="label text-text-faint">Контакты</p>
+            <ul className="mt-4 space-y-2.5 text-[0.9375rem] text-text-dim">
+              <li>
+                <a href={`tel:${RESTAURANT.phoneHref}`} className="transition-colors hover:text-shu">
+                  {RESTAURANT.phone}
+                </a>
               </li>
-            ))}
-          </ul>
-          <Link
-            href="/menu"
-            className="mt-5 inline-block rounded-full border border-basil px-4 py-2 font-semibold text-basil transition-colors hover:bg-basil hover:text-cream"
-          >
-            Смотреть меню
+              <li>
+                <a href={`mailto:${RESTAURANT.email}`} className="transition-colors hover:text-shu">
+                  {RESTAURANT.email}
+                </a>
+              </li>
+              <li>{RESTAURANT.address}</li>
+            </ul>
+            <ul className="mt-5 flex flex-wrap gap-2">
+              {SOCIALS.map((social) => (
+                <li key={social.label}>
+                  <a
+                    href={social.href}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="label inline-block rounded-full border border-line px-3.5 py-2 text-text-dim transition-colors hover:border-shu hover:text-shu"
+                  >
+                    {social.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        <div className="mt-14 flex flex-col gap-4 border-t border-line pt-6 text-xs text-text-faint sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            © {new Date().getFullYear()} {RESTAURANT.name}. {INSTAGRAM_NOTE}
+          </p>
+          <Link href="/privacy" className="transition-colors hover:text-text-dim">
+            Политика конфиденциальности
           </Link>
         </div>
-      </div>
-
-      <div className="border-t border-cream-dark px-4 py-5 text-center text-xs text-ink-soft sm:px-6">
-        © {new Date().getFullYear()} {RESTAURANT.name}. Демонстрационный проект: онлайн-оплата не
-        подключена, заказ подтверждает менеджер по телефону.
       </div>
     </footer>
   );

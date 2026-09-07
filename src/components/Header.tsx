@@ -2,81 +2,137 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useCart } from "./CartContext";
+import { Logo } from "./Logo";
+import { Cart, Close, Menu } from "./Icons";
 import { RESTAURANT } from "@/lib/restaurant";
 
 const NAV = [
-  { href: "/", label: "Главная" },
   { href: "/menu", label: "Меню" },
+  { href: "/#about", label: "О ресторане" },
+  { href: "/#events", label: "Акции" },
+  { href: "/#interior", label: "Галерея" },
   { href: "/#contacts", label: "Контакты" },
 ];
 
 export function Header() {
   const { count, hydrated } = useCart();
+  const [scrolled, setScrolled] = useState(false);
+  const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Переход по ссылке в мобильном меню должен его закрывать.
+  useEffect(() => setOpen(false), [pathname]);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   return (
-    <header className="sticky top-0 z-40 border-b border-cream-dark/80 bg-cream/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-baseline gap-2">
-          <span className="display text-2xl text-basil">Osteria</span>
-          <span className="display text-2xl text-terracotta">Bellini</span>
+    <header
+      className={`sticky top-0 z-50 transition-colors duration-300 ${
+        scrolled || open
+          ? "border-b border-line bg-ink/88 backdrop-blur-xl"
+          : "border-b border-transparent"
+      }`}
+    >
+      <div className="mx-auto flex h-[68px] max-w-[1400px] items-center gap-4 px-5 sm:px-8">
+        <Link href="/" aria-label={`${RESTAURANT.name} — на главную`} className="shrink-0">
+          <Logo />
         </Link>
 
-        <nav className="ml-auto hidden items-center gap-6 text-sm sm:flex">
+        <nav aria-label="Основная навигация" className="ml-6 hidden items-center gap-1 lg:flex">
           {NAV.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className={
-                pathname === link.href
-                  ? "text-basil font-semibold"
-                  : "text-ink-soft transition-colors hover:text-basil"
-              }
+              className="rounded-full px-3.5 py-2 text-[0.9375rem] text-text-dim transition-colors hover:bg-white/5 hover:text-text"
             >
               {link.label}
             </Link>
           ))}
+        </nav>
+
+        <div className="ml-auto flex items-center gap-2">
           <a
             href={`tel:${RESTAURANT.phoneHref}`}
-            className="text-ink-soft transition-colors hover:text-basil"
+            className="hidden text-[0.9375rem] text-text-dim transition-colors hover:text-text xl:block"
           >
             {RESTAURANT.phone}
           </a>
-        </nav>
 
-        <Link
-          href="/cart"
-          className="ml-auto inline-flex items-center gap-2 rounded-full bg-basil px-4 py-2 text-sm font-semibold text-cream transition-colors hover:bg-basil-dark sm:ml-0"
-          aria-label={`Корзина, ${count} позиций`}
-        >
-          <span aria-hidden>🛒</span>
-          <span className="hidden sm:inline">Корзина</span>
-          {hydrated && count > 0 && (
-            <span className="inline-flex min-w-6 justify-center rounded-full bg-cream px-1.5 text-xs font-bold text-basil">
-              {count}
-            </span>
-          )}
-        </Link>
+          <Link
+            href="/cart"
+            aria-label={`Корзина${hydrated && count ? `, ${count} позиций` : ""}`}
+            className="relative grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-line text-text-dim transition-colors hover:border-line-strong hover:text-text"
+          >
+            <Cart className="h-[22px] w-[22px]" />
+            {hydrated && count > 0 ? (
+              <span className="pop absolute -right-1 -top-1 grid h-5 min-w-5 place-items-center rounded-full bg-shu px-1 text-[11px] font-bold text-ink">
+                {count}
+              </span>
+            ) : null}
+          </Link>
+
+          <Link
+            href="/booking"
+            className="hidden cursor-pointer rounded-full bg-shu px-5 py-2.5 text-[0.9375rem] font-semibold text-ink transition-colors hover:bg-shu-soft sm:block"
+          >
+            Забронировать стол
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setOpen((value) => !value)}
+            aria-expanded={open}
+            aria-label={open ? "Закрыть меню" : "Открыть меню"}
+            className="grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-line text-text lg:hidden"
+          >
+            {open ? <Close className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
-      {/* На узких экранах ссылки не помещаются в одну строку — выносим их отдельной полосой. */}
-      <nav className="flex gap-5 border-t border-cream-dark/70 px-4 py-2.5 text-sm sm:hidden">
-        {NAV.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={
-              pathname === link.href ? "font-semibold text-basil" : "text-ink-soft"
-            }
-          >
-            {link.label}
-          </Link>
-        ))}
-        <a href={`tel:${RESTAURANT.phoneHref}`} className="ml-auto text-ink-soft">
-          Позвонить
-        </a>
-      </nav>
+      {open ? (
+        <div className="border-t border-line bg-ink lg:hidden">
+          <nav aria-label="Мобильная навигация" className="px-5 py-4">
+            {[{ href: "/menu", label: "Меню" }, ...NAV.slice(1)].map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="block border-b border-line/60 py-3.5 text-lg text-text"
+              >
+                {link.label}
+              </Link>
+            ))}
+            <div className="mt-5 grid gap-3">
+              <Link
+                href="/booking"
+                className="rounded-full bg-shu px-6 py-3.5 text-center font-semibold text-ink"
+              >
+                Забронировать стол
+              </Link>
+              <a
+                href={`tel:${RESTAURANT.phoneHref}`}
+                className="rounded-full border border-line px-6 py-3.5 text-center font-semibold text-text"
+              >
+                {RESTAURANT.phone}
+              </a>
+            </div>
+          </nav>
+        </div>
+      ) : null}
     </header>
   );
 }

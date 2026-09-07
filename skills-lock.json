@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "product-design": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "skillPath": "skills/product-design/SKILL.md",
+      "computedHash": "002ff3c877bcc5198246d1cc252eb6e67b3d0f20bba9e26e10ffbd419a8b28b1"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/ui-ux-pro-max/SKILL.md",
+      "computedHash": "4080ff883b26b670a5a224fb332e89ecc15319535f4d14279947ad7812fec558"
+    }
+  }
+}

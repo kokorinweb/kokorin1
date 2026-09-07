@@ -1,6 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { CATEGORIES, MENU, formatPrice, getMenuItem } from "./menu";
+import { CATEGORIES, MENU, formatPrice, getMenuItem, portionLabel } from "./menu";
 import { RESTAURANT, siteUrl } from "./restaurant";
+import {
+  ZONES,
+  formatDateKey,
+  moscowNow,
+  slotStates,
+  tableAvailability,
+  toDateKey,
+} from "./booking";
 
 export const AI_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5";
 
@@ -11,7 +19,8 @@ export type ChatMessage = { role: "user" | "assistant"; content: string };
 /** Действие, которое фронт должен выполнить после ответа ассистента. */
 export type AssistantAction =
   | { type: "add_to_cart"; itemId: string; quantity: number }
-  | { type: "show_category"; category: string };
+  | { type: "show_category"; category: string }
+  | { type: "open_booking" };
 
 export type AssistantReply = {
   text: string;
@@ -35,56 +44,80 @@ export function aiConfigured(): boolean {
 
 /**
  * Меню в компактном виде для контекста модели.
- * Отдаём весь список целиком: он маленький (~25 позиций), а RAG на таком объёме —
+ * Отдаём весь список целиком: он маленький (~47 позиций), а RAG на таком объёме —
  * лишняя сложность и лишний источник ошибок.
  */
 function menuForPrompt(): string {
   return CATEGORIES.map((category) => {
     const lines = MENU.filter((item) => item.category === category.id).map((item) => {
       const flags = [
-        item.vegetarian ? "вегетарианское" : null,
-        item.spicy ? "острое" : null,
-        item.allergens.length ? `аллергены: ${item.allergens.join(", ")}` : "без заявленных аллергенов",
+        item.tags.length ? `признаки: ${item.tags.join(", ")}` : null,
+        item.allergens.length
+          ? `аллергены: ${item.allergens.join(", ")}`
+          : "без заявленных аллергенов",
+        item.chef ? "блюдо шефа" : null,
       ]
         .filter(Boolean)
         .join("; ");
-      return `- [${item.id}] ${item.name} (${item.nameIt}), ${formatPrice(item.price)}, ${item.portion}. ${item.description} ${flags}.`;
+      return `- [${item.id}] ${item.name} (${item.nameJp}), ${formatPrice(item.price)}, ${portionLabel(item)}. Состав: ${item.composition.join(", ")}. ${flags}.`;
     });
     return `## ${category.title} — ${category.subtitle}\n${lines.join("\n")}`;
   }).join("\n\n");
 }
 
 function buildSystemPrompt(channel: Channel): string {
-  const hours = RESTAURANT.hours.map((h) => `${h.days}: ${h.time}`).join("; ");
-  const d = RESTAURANT.delivery;
+  const hours = RESTAURANT.hours.map((row) => `${row.days}: ${row.time}`).join("; ");
+  const today = moscowNow();
+  const zones = ZONES.map(
+    (zone) => `${zone.title}${zone.surcharge ? ` (депозит ${zone.surcharge} ₽)` : ""}`,
+  ).join(", ");
 
   const channelRules =
     channel === "web"
-      ? `Ты работаешь в виджете чата на сайте. У тебя есть инструменты add_to_cart и show_category — пользуйся ими, когда гость просит что-то добавить или показать раздел меню. После вызова add_to_cart коротко подтверди словами, что добавил.`
-      : `Ты работаешь в Telegram-боте. Инструментов у тебя нет: собрать корзину и оформить заказ гость может на сайте ${siteUrl()} или по телефону ${RESTAURANT.phone}. Пиши обычным текстом, компактно, без Markdown и таблиц.`;
+      ? `Ты работаешь в виджете чата на сайте. Инструменты: add_to_cart (положить блюдо в корзину), show_category (открыть раздел меню), check_tables (посмотреть свободные столики), open_booking (открыть форму брони). После add_to_cart коротко подтверди словами, что добавил.`
+      : `Ты работаешь в Telegram-боте. Корзина и бронь — на сайте ${siteUrl()}. Инструмент check_tables у тебя есть: им можно честно посмотреть свободное время. Пиши обычным текстом, компактно, без Markdown и таблиц.`;
 
-  return `Ты — Лука, ИИ-консультант ресторана «${RESTAURANT.name}». ${RESTAURANT.tagline}.
+  return `Ты — Кай, ИИ-консультант японского ресторана «${RESTAURANT.name}». ${RESTAURANT.tagline}.
 
 СВЕДЕНИЯ О ЗАВЕДЕНИИ
 Адрес: ${RESTAURANT.address} (${RESTAURANT.metro}).
 Телефон: ${RESTAURANT.phone}. Почта: ${RESTAURANT.email}.
 Часы работы: ${hours}.
-Доставка: ${d.zone}, минимальный заказ ${d.minOrder} ₽, стоимость ${d.fee} ₽, бесплатно от ${d.freeFrom} ₽, примерно ${d.etaMinutes} минут.
-Самовывоз: готовность примерно ${RESTAURANT.pickup.etaMinutes} минут, скидка ${RESTAURANT.pickup.discountPercent}%.
+Сегодня: ${formatDateKey(toDateKey(today))}, время ${today.getHours()}:${`${today.getMinutes()}`.padStart(2, "0")} по Москве.
+Залы для брони: ${zones}.
+Бронь бесплатная, без предоплаты, стол держим 20 минут. Забронировать можно на сайте ${siteUrl()}/booking.
+После брони гость может заказать блюда заранее — их подадут через ${RESTAURANT.preorder.leadMinutes} минут после его прихода.
+Самовывоз: готовность ${RESTAURANT.pickup.etaMinutes} минут, скидка ${RESTAURANT.pickup.discountPercent}%.
+Доставки у нас нет — про доставку отвечай честно, что не возим, и предлагай самовывоз или столик.
 
 МЕНЮ (полное, других блюд не существует)
 ${menuForPrompt()}
 
 ПРАВИЛА
-1. Отвечай только на основании сведений выше. Если чего-то нет в меню — прямо скажи, что такого блюда нет, и предложи ближайшую альтернативу из меню.
-2. Никогда не выдумывай блюда, цены, состав, акции, наличие столиков и сроки. Цены называй ровно те, что указаны.
-3. Про аллергены отвечай только по полю «аллергены». Обязательно добавляй, что производство общее и следы других аллергенов возможны, а при серьёзной аллергии нужно предупредить менеджера по телефону ${RESTAURANT.phone}.
-4. Бронь столика, изменение или отмена заказа, жалобы, вопросы о вакансиях и всё, чего нет в твоих данных, — переводи на телефон ${RESTAURANT.phone}. Не обещай ничего от имени ресторана.
-5. Отвечай по-русски (или на языке гостя), тепло и по делу: 2–4 предложения, без канцелярита и без списка на пол-экрана, если гость сам не попросил подробностей.
-6. Ты не обрабатываешь оплату и не видишь статус существующих заказов.
+1. Отвечай только на основании сведений выше и результатов инструментов. Нет блюда в меню — так и скажи и предложи ближайшую замену.
+2. Никогда не выдумывай блюда, цены, состав, акции и свободные столики. Свободное время узнавай только через check_tables, на память не отвечай.
+3. Про аллергены отвечай строго по полю «аллергены». Всегда добавляй, что производство общее и следы других аллергенов возможны, а при серьёзной аллергии нужно предупредить менеджера: ${RESTAURANT.phone}.
+4. Сам ты бронь не оформляешь и заказ не подтверждаешь: бронь гость завершает на сайте (можно вызвать open_booking), заказ — в корзине. Отмену и изменение брони переводи на телефон ${RESTAURANT.phone}.
+5. Отвечай по-русски (или на языке гостя), тепло и по делу: 2–4 предложения, без канцелярита.
+6. Оплату ты не обрабатываешь и статус существующих заказов не видишь.
 
 ${channelRules}`;
 }
+
+const CHECK_TABLES_TOOL: Anthropic.Tool = {
+  name: "check_tables",
+  description:
+    "Проверить свободное время и столики на дату. Возвращает список доступных слотов, а если передать time — ещё и свободные столы по залам.",
+  input_schema: {
+    type: "object",
+    properties: {
+      date: { type: "string", description: "Дата в формате ГГГГ-ММ-ДД" },
+      guests: { type: "integer", minimum: 1, maximum: 12, description: "Количество гостей" },
+      time: { type: "string", description: "Время в формате ЧЧ:ММ, необязательно" },
+    },
+    required: ["date", "guests"],
+  },
+};
 
 const WEB_TOOLS: Anthropic.Tool[] = [
   {
@@ -94,10 +127,7 @@ const WEB_TOOLS: Anthropic.Tool[] = [
     input_schema: {
       type: "object",
       properties: {
-        itemId: {
-          type: "string",
-          description: "Идентификатор блюда из меню, например carbonara",
-        },
+        itemId: { type: "string", description: "Идентификатор блюда из меню, например philadelphia" },
         quantity: { type: "integer", minimum: 1, maximum: 10, description: "Количество порций" },
       },
       required: ["itemId", "quantity"],
@@ -111,16 +141,24 @@ const WEB_TOOLS: Anthropic.Tool[] = [
       properties: {
         category: {
           type: "string",
-          enum: CATEGORIES.map((c) => c.id),
+          enum: CATEGORIES.map((category) => category.id),
           description: "Идентификатор раздела меню",
         },
       },
       required: ["category"],
     },
   },
+  {
+    name: "open_booking",
+    description: "Открыть гостю форму бронирования столика.",
+    input_schema: { type: "object", properties: {} },
+  },
+  CHECK_TABLES_TOOL,
 ];
 
-const MAX_TOOL_ROUNDS = 3;
+const TELEGRAM_TOOLS: Anthropic.Tool[] = [CHECK_TABLES_TOOL];
+
+const MAX_TOOL_ROUNDS = 4;
 
 /** Выполняет инструмент и возвращает результат для модели + действие для клиента. */
 function runTool(
@@ -142,10 +180,55 @@ function runTool(
 
   if (name === "show_category") {
     const category = String(input.category ?? "");
-    if (!CATEGORIES.some((c) => c.id === category)) {
+    if (!CATEGORIES.some((row) => row.id === category)) {
       return { result: `Ошибка: раздела «${category}» не существует.`, isError: true };
     }
     return { result: "Раздел открыт.", action: { type: "show_category", category } };
+  }
+
+  if (name === "open_booking") {
+    return { result: "Форма бронирования открыта.", action: { type: "open_booking" } };
+  }
+
+  if (name === "check_tables") {
+    const date = String(input.date ?? "");
+    const guests = Math.max(1, Math.min(12, Number(input.guests ?? 2) || 2));
+    const time = input.time ? String(input.time) : null;
+
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      return { result: "Ошибка: дата должна быть в формате ГГГГ-ММ-ДД.", isError: true };
+    }
+
+    const free = slotStates(date, guests).filter((state) => state.available);
+    if (free.length === 0) {
+      return {
+        result: `На ${formatDateKey(date)} свободного времени на ${guests} гостей нет.`,
+      };
+    }
+
+    if (!time) {
+      return {
+        result: `Свободное время на ${formatDateKey(date)} для ${guests} гостей: ${free.map((state) => state.slot).join(", ")}.`,
+      };
+    }
+
+    const tables = tableAvailability(date, time, guests).filter(
+      (table) => table.free && !table.tooSmall,
+    );
+    if (tables.length === 0) {
+      return {
+        result: `На ${time} свободных столов на ${guests} гостей нет. Свободно другое время: ${free.map((state) => state.slot).join(", ")}.`,
+      };
+    }
+
+    const byZone = ZONES.map((zone) => {
+      const ids = tables.filter((table) => table.zone === zone.id).map((table) => table.tableId);
+      return ids.length ? `${zone.title}: столы ${ids.join(", ")}` : null;
+    })
+      .filter(Boolean)
+      .join("; ");
+
+    return { result: `На ${formatDateKey(date)} в ${time} свободно. ${byZone}.` };
   }
 
   return { result: `Ошибка: неизвестный инструмент «${name}».`, isError: true };
@@ -165,7 +248,7 @@ export async function askAssistant(
   channel: Channel,
 ): Promise<AssistantReply> {
   const anthropic = getClient();
-  const tools = channel === "web" ? WEB_TOOLS : [];
+  const tools = channel === "web" ? WEB_TOOLS : TELEGRAM_TOOLS;
   const actions: AssistantAction[] = [];
 
   const messages: Anthropic.MessageParam[] = history.map((message) => ({
@@ -176,7 +259,7 @@ export async function askAssistant(
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
     const response = await anthropic.messages.create({
       model: AI_MODEL,
-      max_tokens: 700,
+      max_tokens: 800,
       system: buildSystemPrompt(channel),
       tools,
       messages,
@@ -208,11 +291,7 @@ export async function askAssistant(
     // Модель могла написать текст вместе с вызовом инструмента — если это был
     // последний разрешённый раунд, отдаём то, что уже есть.
     if (round === MAX_TOOL_ROUNDS - 1) {
-      const partial = textOf(response.content);
-      return {
-        text: partial || "Готово! Что-нибудь ещё?",
-        actions,
-      };
+      return { text: textOf(response.content) || "Готово! Что-нибудь ещё?", actions };
     }
   }
 

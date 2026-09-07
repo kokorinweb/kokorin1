@@ -11,3 +11,8 @@ next-env.d.ts
 
 .DS_Store
 npm-debug.log*
+
+# Сторонние скиллы, поставленные через `npx skills add`.
+# В репозитории держим только skills-lock.json — по нему они восстанавливаются.
+.agents/
+.claude/

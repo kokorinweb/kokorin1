@@ -1,88 +1,111 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { CATEGORIES, MENU, type CategoryId } from "@/lib/menu";
+import { useMemo, useState } from "react";
 import { DishCard } from "./DishCard";
+import { Close } from "./Icons";
+import { CATEGORIES, MENU, TAGS, type CategoryId, type Tag } from "@/lib/menu";
+import { plural } from "./CartBar";
 
-type Filter = CategoryId | "all";
+/**
+ * Витрина меню: категории сверху, фильтры под ними.
+ * Фильтры складываются по И (острые + с лососем = острые роллы с лососем),
+ * потому что «или» на четырёх включённых чипсах превращает выдачу в всё меню.
+ */
+export function MenuBrowser({ initialCategory }: { initialCategory?: CategoryId }) {
+  const [category, setCategory] = useState<CategoryId | "all">(initialCategory ?? "all");
+  const [tags, setTags] = useState<Tag[]>([]);
 
-const DIET_FILTERS = [
-  { id: "any", label: "Любые" },
-  { id: "veg", label: "Вегетарианские" },
-  { id: "no-gluten", label: "Без глютена" },
-] as const;
+  const items = useMemo(
+    () =>
+      MENU.filter((item) => category === "all" || item.category === category).filter((item) =>
+        tags.every((tag) => item.tags.includes(tag)),
+      ),
+    [category, tags],
+  );
 
-type Diet = (typeof DIET_FILTERS)[number]["id"];
-
-export function MenuBrowser() {
-  const searchParams = useSearchParams();
-  const [category, setCategory] = useState<Filter>("all");
-  const [diet, setDiet] = useState<Diet>("any");
-
-  // ИИ-помощник умеет открывать раздел: он ведёт на /menu?cat=pizza.
-  const requested = searchParams.get("cat");
-  useEffect(() => {
-    if (requested && CATEGORIES.some((c) => c.id === requested)) {
-      setCategory(requested as CategoryId);
-      document.getElementById("menu-list")?.scrollIntoView({ block: "start" });
-    }
-  }, [requested]);
-
-  const visible = useMemo(() => {
-    return MENU.filter((item) => {
-      if (category !== "all" && item.category !== category) return false;
-      if (diet === "veg" && !item.vegetarian) return false;
-      if (diet === "no-gluten" && item.allergens.includes("глютен")) return false;
-      return true;
-    });
-  }, [category, diet]);
+  const toggleTag = (tag: Tag) =>
+    setTags((current) =>
+      current.includes(tag) ? current.filter((value) => value !== tag) : [...current, tag],
+    );
 
   return (
-    <div id="menu-list">
-      <div className="flex flex-wrap gap-2">
-        <FilterChip active={category === "all"} onClick={() => setCategory("all")}>
-          Всё меню
-        </FilterChip>
-        {CATEGORIES.map((item) => (
-          <FilterChip
-            key={item.id}
-            active={category === item.id}
-            onClick={() => setCategory(item.id)}
-          >
-            {item.title}
-          </FilterChip>
-        ))}
+    <div>
+      {/* Категории липнут под шапкой: длинное меню без них превращается в бесконечный скролл. */}
+      <div className="sticky top-[68px] z-30 -mx-5 border-b border-line bg-ink/92 px-5 py-3 backdrop-blur-xl sm:-mx-8 sm:px-8">
+        {/* Затухание справа — подсказка, что лента прокручивается дальше */}
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-ink to-transparent" />
+        <div className="rail flex gap-2 overflow-x-auto pb-1">
+          <CategoryChip
+            active={category === "all"}
+            onClick={() => setCategory("all")}
+            title="Всё меню"
+          />
+          {CATEGORIES.map((meta) => (
+            <CategoryChip
+              key={meta.id}
+              active={category === meta.id}
+              onClick={() => setCategory(meta.id)}
+              title={meta.title}
+              jp={meta.jp}
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-        <span className="text-ink-soft">Ограничения:</span>
-        {DIET_FILTERS.map((option) => (
+      <div className="mt-6 flex flex-wrap items-center gap-2">
+        <span className="label mr-1 text-text-faint">Фильтры</span>
+        {TAGS.map((tag) => {
+          const active = tags.includes(tag.id);
+          return (
+            <button
+              key={tag.id}
+              type="button"
+              onClick={() => toggleTag(tag.id)}
+              aria-pressed={active}
+              className={`cursor-pointer rounded-full border px-4 py-2 text-sm transition-colors ${
+                active
+                  ? "border-shu bg-shu text-ink font-semibold"
+                  : "border-line text-text-dim hover:border-line-strong hover:text-text"
+              }`}
+            >
+              {tag.label}
+            </button>
+          );
+        })}
+        {tags.length > 0 ? (
           <button
-            key={option.id}
             type="button"
-            onClick={() => setDiet(option.id)}
-            className={`rounded-full px-3 py-1 transition-colors ${
-              diet === option.id
-                ? "bg-terracotta text-cream"
-                : "bg-white/70 text-ink-soft hover:bg-cream-dark"
-            }`}
+            onClick={() => setTags([])}
+            className="flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-2 text-sm text-text-faint transition-colors hover:text-text"
           >
-            {option.label}
+            <Close className="h-3.5 w-3.5" />
+            Сбросить
           </button>
-        ))}
+        ) : null}
       </div>
 
-      <p className="mt-4 text-sm text-ink-soft">Найдено блюд: {visible.length}</p>
+      <p className="mt-5 text-sm text-text-faint" aria-live="polite">
+        {items.length} {plural(items.length, "блюдо", "блюда", "блюд")}
+      </p>
 
-      {visible.length === 0 ? (
-        <p className="mt-10 rounded-2xl border border-dashed border-cream-dark p-10 text-center text-ink-soft">
-          Под эти условия ничего не подошло. Снимите один из фильтров или спросите нашего
-          ИИ-помощника — он подберёт замену.
-        </p>
+      {items.length === 0 ? (
+        <div className="mt-8 rounded-2xl border border-dashed border-line bg-ink-2 px-6 py-16 text-center">
+          <p className="display text-2xl text-text">Под такие фильтры ничего нет</p>
+          <p className="mx-auto mt-3 max-w-md text-text-dim">
+            Скорее всего, вы выбрали взаимоисключающие признаки — например «без мяса» и «с тунцом».
+            Снимите один фильтр.
+          </p>
+          <button
+            type="button"
+            onClick={() => setTags([])}
+            className="mt-6 cursor-pointer rounded-full bg-shu px-6 py-3 font-semibold text-ink transition-colors hover:bg-shu-soft"
+          >
+            Сбросить фильтры
+          </button>
+        </div>
       ) : (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {visible.map((item) => (
+          {items.map((item) => (
             <DishCard key={item.id} item={item} />
           ))}
         </div>
@@ -91,26 +114,30 @@ export function MenuBrowser() {
   );
 }
 
-function FilterChip({
+function CategoryChip({
   active,
   onClick,
-  children,
+  title,
+  jp,
 }: {
   active: boolean;
   onClick: () => void;
-  children: React.ReactNode;
+  title: string;
+  jp?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+      aria-pressed={active}
+      className={`flex shrink-0 cursor-pointer items-baseline gap-2 rounded-full px-4 py-2.5 text-[0.9375rem] transition-colors ${
         active
-          ? "border-basil bg-basil text-cream"
-          : "border-cream-dark bg-white/70 text-ink hover:border-basil hover:text-basil"
+          ? "bg-white/10 font-semibold text-text"
+          : "text-text-dim hover:bg-white/5 hover:text-text"
       }`}
     >
-      {children}
+      {title}
+      {jp ? <span className="jp text-[0.6875rem] text-text-faint">{jp}</span> : null}
     </button>
   );
 }

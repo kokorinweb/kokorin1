@@ -1,7 +1,8 @@
 import { Bot, InlineKeyboard } from "grammy";
-import { CATEGORIES, formatPrice, itemsByCategory, type CategoryId } from "./menu";
+import { CATEGORIES, formatPrice, itemsByCategory, portionLabel, type CategoryId } from "./menu";
 import { RESTAURANT, siteUrl } from "./restaurant";
 import { askAssistant, aiConfigured, type ChatMessage } from "./ai";
+import { formatDateKey, zoneById, type Booking } from "./booking";
 import type { OrderInput, PricedOrder } from "./order";
 
 export function botConfigured(): boolean {
@@ -30,45 +31,45 @@ function remember(chatId: number, message: ChatMessage): ChatMessage[] {
   return trimmed;
 }
 
-const WELCOME = `Ciao! 👋 Это бот ресторана «${RESTAURANT.name}».
+const WELCOME = `Это бот ресторана «${RESTAURANT.name}» 🍣
 
-Я — Лука, ИИ-консультант. Спросите меня что угодно: что есть в меню, из чего блюдо, есть ли вегетарианское, как работает доставка. Отвечаю своими словами, а не кнопками.
+Я — Кай, ИИ-консультант. Спросите что угодно: что взять на двоих, из чего ролл, есть ли свободный стол в пятницу вечером. Свободное время я смотрю по-настоящему, а не выдумываю.
 
-Заказ собирается на сайте — там же корзина и оформление.`;
+Бронь и корзина — на сайте, там же схема зала.`;
 
 function mainKeyboard(): InlineKeyboard {
   return new InlineKeyboard()
-    .text("🍝 Меню", "menu")
-    .text("🚚 Доставка", "delivery")
+    .text("Меню", "menu")
+    .text("Часы работы", "hours")
     .row()
-    .text("🕐 Часы работы", "hours")
-    .url("🛒 Заказать на сайте", siteUrl());
+    .url("Забронировать стол", `${siteUrl()}/booking`)
+    .url("Собрать заказ", `${siteUrl()}/menu`);
 }
 
 function categoryText(category: CategoryId): string {
-  const meta = CATEGORIES.find((c) => c.id === category);
+  const meta = CATEGORIES.find((row) => row.id === category);
   const lines = itemsByCategory(category).map(
-    (item) => `• ${item.name} — ${formatPrice(item.price)} (${item.portion})`,
+    (item) => `• ${item.name} — ${formatPrice(item.price)} (${portionLabel(item)})`,
   );
   return `<b>${meta?.title} · ${meta?.subtitle}</b>\n\n${lines.join("\n")}`;
 }
 
-function deliveryText(): string {
-  const d = RESTAURANT.delivery;
-  return `<b>Доставка и самовывоз</b>
+function visitText(): string {
+  return `<b>Как к нам попасть</b>
 
-🚚 Доставка ${d.zone}
-• минимальный заказ — ${formatPrice(d.minOrder)}
-• стоимость — ${formatPrice(d.fee)}, бесплатно от ${formatPrice(d.freeFrom)}
-• примерно ${d.etaMinutes} минут
+🍱 Столик — бронь на сайте: ${siteUrl()}/booking
+Бесплатно, без предоплаты, стол держим 20 минут.
+После брони можно заказать блюда заранее — подадим через ${RESTAURANT.preorder.leadMinutes} минут после прихода.
 
-🏃 Самовывоз: ${RESTAURANT.pickup.etaMinutes} минут и скидка ${RESTAURANT.pickup.discountPercent}%
+🥡 Самовывоз: готовность ${RESTAURANT.pickup.etaMinutes} минут, скидка ${RESTAURANT.pickup.discountPercent}%.
+
+Доставки у нас нет — возим только вкус на месте.
 📍 ${RESTAURANT.address}`;
 }
 
 function hoursText(): string {
-  const rows = RESTAURANT.hours.map((h) => `• ${h.days} — ${h.time}`).join("\n");
-  return `<b>Часы работы</b>\n${rows}\n\n📍 ${RESTAURANT.address}\n📞 ${RESTAURANT.phone}`;
+  const rows = RESTAURANT.hours.map((row) => `• ${row.days} — ${row.time}`).join("\n");
+  return `<b>Часы работы</b>\n${rows}\n\n📍 ${RESTAURANT.address}\n🚇 ${RESTAURANT.metro}\n📞 ${RESTAURANT.phone}`;
 }
 
 let cached: Bot | null = null;
@@ -79,12 +80,14 @@ export function createBot(): Bot {
 
   const bot = new Bot(token());
 
-  bot.command("start", (ctx) =>
-    ctx.reply(WELCOME, { reply_markup: mainKeyboard() }),
-  );
-
+  bot.command("start", (ctx) => ctx.reply(WELCOME, { reply_markup: mainKeyboard() }));
   bot.command("menu", (ctx) => ctx.reply("Что посмотрим?", { reply_markup: menuKeyboard() }));
-  bot.command("delivery", (ctx) => ctx.reply(deliveryText(), { parse_mode: "HTML" }));
+  bot.command("book", (ctx) =>
+    ctx.reply(visitText(), {
+      parse_mode: "HTML",
+      reply_markup: new InlineKeyboard().url("Открыть схему зала", `${siteUrl()}/booking`),
+    }),
+  );
   bot.command("hours", (ctx) => ctx.reply(hoursText(), { parse_mode: "HTML" }));
   bot.command("contacts", (ctx) =>
     ctx.reply(
@@ -93,16 +96,12 @@ export function createBot(): Bot {
   );
   bot.command("reset", (ctx) => {
     history.delete(ctx.chat.id);
-    return ctx.reply("Контекст диалога очищен. Спрашивайте заново 🙂");
+    return ctx.reply("Контекст диалога очищен. Спрашивайте заново.");
   });
 
   bot.callbackQuery("menu", async (ctx) => {
     await ctx.answerCallbackQuery();
     await ctx.reply("Выберите раздел:", { reply_markup: menuKeyboard() });
-  });
-  bot.callbackQuery("delivery", async (ctx) => {
-    await ctx.answerCallbackQuery();
-    await ctx.reply(deliveryText(), { parse_mode: "HTML" });
   });
   bot.callbackQuery("hours", async (ctx) => {
     await ctx.answerCallbackQuery();
@@ -112,7 +111,7 @@ export function createBot(): Bot {
   bot.callbackQuery(/^cat:(.+)$/, async (ctx) => {
     const category = ctx.match[1] as CategoryId;
     await ctx.answerCallbackQuery();
-    if (!CATEGORIES.some((c) => c.id === category)) return;
+    if (!CATEGORIES.some((row) => row.id === category)) return;
     await ctx.reply(categoryText(category), { parse_mode: "HTML" });
   });
 
@@ -122,7 +121,7 @@ export function createBot(): Bot {
 
     if (!aiConfigured()) {
       await ctx.reply(
-        `ИИ-консультант сейчас недоступен. Загляните в меню командой /menu или позвоните: ${RESTAURANT.phone}`,
+        `ИИ-консультант сейчас недоступен. Меню — командой /menu, бронь — ${siteUrl()}/booking, телефон: ${RESTAURANT.phone}`,
       );
       return;
     }
@@ -155,17 +154,17 @@ export function createBot(): Bot {
 function menuKeyboard(): InlineKeyboard {
   const keyboard = new InlineKeyboard();
   CATEGORIES.forEach((category, index) => {
-    keyboard.text(`${category.title}`, `cat:${category.id}`);
+    keyboard.text(category.title, `cat:${category.id}`);
     if (index % 2 === 1) keyboard.row();
   });
-  keyboard.row().url("🛒 Собрать заказ на сайте", siteUrl());
+  keyboard.row().url("Собрать заказ на сайте", `${siteUrl()}/menu`);
   return keyboard;
 }
 
 export const BOT_COMMANDS = [
   { command: "start", description: "Начать" },
   { command: "menu", description: "Меню по разделам" },
-  { command: "delivery", description: "Доставка и самовывоз" },
+  { command: "book", description: "Бронь столика и самовывоз" },
   { command: "hours", description: "Часы работы" },
   { command: "contacts", description: "Контакты и адрес" },
   { command: "reset", description: "Очистить контекст диалога" },
@@ -175,20 +174,25 @@ function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+async function sendToWorkChat(text: string): Promise<void> {
+  const chatId = process.env.TELEGRAM_ORDERS_CHAT_ID;
+  if (!chatId || !botConfigured()) {
+    console.warn("[telegram] уведомление не отправлено: нет токена или chat id");
+    return;
+  }
+  await createBot().api.sendMessage(chatId, text, { parse_mode: "HTML" });
+}
+
 /** Отправляет новый заказ с сайта в рабочий чат ресторана. */
 export async function notifyNewOrder(
   orderNumber: string,
   input: OrderInput,
   priced: PricedOrder,
 ): Promise<void> {
-  const chatId = process.env.TELEGRAM_ORDERS_CHAT_ID;
-  if (!chatId || !botConfigured()) {
-    console.warn("[telegram] уведомление о заказе не отправлено: нет токена или chat id");
-    return;
-  }
-
   const lines = priced.lines
-    .map((line) => `• ${escapeHtml(line.item.name)} × ${line.quantity} — ${formatPrice(line.lineTotal)}`)
+    .map(
+      (line) => `• ${escapeHtml(line.item.name)} × ${line.quantity} — ${formatPrice(line.lineTotal)}`,
+    )
     .join("\n");
 
   const parts = [
@@ -199,18 +203,52 @@ export async function notifyNewOrder(
     `Сумма: ${formatPrice(priced.subtotal)}`,
   ];
   if (priced.discount) parts.push(`Скидка за самовывоз: −${formatPrice(priced.discount)}`);
-  if (priced.deliveryFee) parts.push(`Доставка: ${formatPrice(priced.deliveryFee)}`);
-  parts.push(
-    `<b>Итого: ${formatPrice(priced.total)}</b>`,
-    "",
-    priced.fulfillment === "delivery" ? "🚚 Доставка" : "🏃 Самовывоз",
-    `👤 ${escapeHtml(input.name)}`,
-    `📞 ${escapeHtml(input.phone)}`,
-  );
-  if (input.address) parts.push(`📍 ${escapeHtml(input.address)}`);
+  parts.push(`<b>Итого: ${formatPrice(priced.total)}</b>`, "");
+
+  if (input.fulfillment === "pickup") {
+    parts.push(`🥡 Самовывоз к ${escapeHtml(input.pickupTime ?? "—")}`);
+  } else {
+    parts.push(
+      `🍱 К столику по броне ${escapeHtml(input.bookingCode ?? "—")}`,
+      `Подать к ${escapeHtml(input.serveTime ?? "—")}`,
+    );
+  }
+
+  parts.push(`👤 ${escapeHtml(input.name)}`, `📞 ${escapeHtml(input.phone)}`);
   if (input.comment) parts.push(`💬 ${escapeHtml(input.comment)}`);
 
-  const bot = createBot();
-  await bot.api.sendMessage(chatId, parts.join("\n"), { parse_mode: "HTML" });
+  await sendToWorkChat(parts.join("\n"));
 }
 
+/** Отправляет новую бронь в рабочий чат — хостес видит её раньше, чем гость доедет. */
+export async function notifyNewBooking(booking: Booking): Promise<void> {
+  const parts = [
+    `<b>🪑 Новая бронь ${escapeHtml(booking.code)}</b>`,
+    "",
+    `📅 ${formatDateKey(booking.dateKey)}, ${booking.slot}`,
+    `👥 ${booking.guests}`,
+    `🪑 Стол №${booking.tableId} · ${zoneById(booking.zone).title}`,
+    `👤 ${escapeHtml(booking.name)}`,
+    `📞 ${escapeHtml(booking.phone)}`,
+  ];
+  if (booking.comment) parts.push(`💬 ${escapeHtml(booking.comment)}`);
+
+  await sendToWorkChat(parts.join("\n"));
+}
+
+/** Заявка на подарочный сертификат — уходит менеджеру, оплату он выставляет сам. */
+export async function notifyCertificateRequest(input: {
+  amount: number;
+  name: string;
+  phone: string;
+}): Promise<void> {
+  await sendToWorkChat(
+    [
+      "<b>🎁 Заявка на сертификат</b>",
+      "",
+      `Номинал: ${formatPrice(input.amount)}`,
+      `👤 ${escapeHtml(input.name)}`,
+      `📞 ${escapeHtml(input.phone)}`,
+    ].join("\n"),
+  );
+}

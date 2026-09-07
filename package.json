@@ -1,8 +1,8 @@
 {
-  "name": "osteria-bellini",
+  "name": "nori",
   "version": "0.1.0",
   "private": true,
-  "description": "Сайт итальянского ресторана с корзиной, ИИ-помощником и Telegram-ботом",
+  "description": "Сайт японского ресторана НОРИ: меню, корзина, бронирование столика по схеме зала, предзаказ блюд, ИИ-консультант и Telegram-бот",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

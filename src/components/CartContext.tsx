@@ -11,7 +11,7 @@ import {
 } from "react";
 import { getMenuItem, type MenuItem } from "@/lib/menu";
 
-const STORAGE_KEY = "bellini.cart.v1";
+const STORAGE_KEY = "nori.cart.v1";
 
 export type CartLine = { itemId: string; quantity: number };
 
@@ -24,6 +24,8 @@ type CartValue = {
   subtotal: number;
   /** Готово ли состояние из localStorage — до этого не рендерим суммы, чтобы не было мигания. */
   hydrated: boolean;
+  /** id последнего добавленного блюда — для микро-подтверждения на кнопке. */
+  lastAdded: string | null;
   add: (itemId: string, quantity?: number) => void;
   setQuantity: (itemId: string, quantity: number) => void;
   remove: (itemId: string) => void;
@@ -61,6 +63,7 @@ function clampQty(value: number): number {
 export function CartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [hydrated, setHydrated] = useState(false);
+  const [lastAdded, setLastAdded] = useState<string | null>(null);
 
   useEffect(() => {
     setLines(readStorage());
@@ -78,6 +81,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const add = useCallback((itemId: string, quantity = 1) => {
     if (!getMenuItem(itemId)) return;
+    setLastAdded(itemId);
     setLines((current) => {
       const existing = current.find((line) => line.itemId === itemId);
       if (!existing) return [...current, { itemId, quantity: clampQty(quantity) }];
@@ -116,12 +120,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       count: entries.reduce((sum, entry) => sum + entry.quantity, 0),
       subtotal: entries.reduce((sum, entry) => sum + entry.lineTotal, 0),
       hydrated,
+      lastAdded,
       add,
       setQuantity,
       remove,
       clear,
     };
-  }, [lines, hydrated, add, setQuantity, remove, clear]);
+  }, [lines, hydrated, lastAdded, add, setQuantity, remove, clear]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }

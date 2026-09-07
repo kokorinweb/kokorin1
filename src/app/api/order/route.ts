@@ -29,14 +29,10 @@ export async function POST(request: Request) {
 
   const input = parsed.data;
 
-  if (input.fulfillment === "delivery" && input.address.trim().length < 5) {
-    return NextResponse.json({ error: "Укажите адрес доставки" }, { status: 400 });
-  }
-
   let priced;
   try {
     // Цены и суммы считает сервер по MENU: то, что прислал браузер, значения не имеет.
-    priced = priceOrder(input.lines, input.fulfillment);
+    priced = priceOrder(input);
   } catch (error) {
     if (error instanceof OrderError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
@@ -62,7 +58,6 @@ export async function POST(request: Request) {
     total: priced.total,
     subtotal: priced.subtotal,
     discount: priced.discount,
-    deliveryFee: priced.deliveryFee,
     etaMinutes: priced.etaMinutes,
   });
 }

@@ -1,27 +1,40 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { MenuBrowser } from "@/components/MenuBrowser";
+import { CartBar } from "@/components/CartBar";
+import { Section, SectionHeading } from "@/components/Section";
+import { CATEGORIES, type CategoryId } from "@/lib/menu";
 
 export const metadata: Metadata = {
   title: "Меню",
   description:
-    "Паста ручной работы, неаполитанская пицца, закуски, десерты и вино. Состав, аллергены и цены.",
+    "Роллы, суши, сеты, сашими, горячее, супы, салаты, закуски, десерты и напитки. Фильтры по острым, вегетарианским, с лососем и тунцом.",
 };
 
-export default function MenuPage() {
-  return (
-    <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
-      <h1 className="display text-5xl">Меню</h1>
-      <p className="mt-3 max-w-2xl text-ink-soft">
-        Все цены указаны за порцию. Аллергены перечислены для каждого блюда, но производство общее —
-        следы других аллергенов возможны. При серьёзной аллергии обязательно предупредите менеджера.
-      </p>
+export default async function MenuPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const params = await searchParams;
+  const requested = params.category;
+  const initialCategory = CATEGORIES.some((category) => category.id === requested)
+    ? (requested as CategoryId)
+    : undefined;
 
-      <div className="mt-10">
-        <Suspense fallback={<p className="text-ink-soft">Загружаем меню…</p>}>
-          <MenuBrowser />
-        </Suspense>
-      </div>
-    </div>
+  return (
+    <>
+      <Section>
+        <SectionHeading
+          kicker="47 позиций"
+          title="Меню"
+          jp="お品書き"
+          lead="Всё готовится после заказа. Состав, вес и цена указаны честно — то, что в карточке, то и на тарелке."
+        />
+        <div className="mt-10">
+          <MenuBrowser initialCategory={initialCategory} />
+        </div>
+      </Section>
+      <CartBar />
+    </>
   );
 }

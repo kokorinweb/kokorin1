@@ -1,52 +1,136 @@
 @import "tailwindcss";
 
+/*
+ * Дизайн-система НОРИ.
+ * База — суми (тушь), акцент — сюдзи (киноварь), светлые блоки — васи (бумага).
+ * Цвета живут только здесь: в компонентах используются токены, а не хексы.
+ */
 @theme {
-  --color-cream: #fbf7f0;
-  --color-cream-dark: #f2ebe0;
-  --color-ink: #221d17;
-  --color-ink-soft: #5c534a;
-  --color-basil: #2f5d3f;
-  --color-basil-dark: #23472f;
-  --color-terracotta: #b6482f;
-  --color-terracotta-soft: #e8d3cb;
-  --color-gold: #c8912f;
+  /* Тёмная основа */
+  --color-ink: #0a0a0c;
+  --color-ink-2: #111115;
+  --color-ink-3: #1a1a21;
+  --color-ink-4: #24242d;
 
-  --font-display: var(--font-serif), Georgia, "Times New Roman", serif;
+  /* Светлые блоки — рисовая бумага */
+  --color-washi: #f4efe6;
+  --color-washi-2: #e9e2d5;
+  --color-sumi: #15151a;
+  --color-sumi-soft: #55524c;
+
+  /* Текст на тёмном */
+  --color-text: #efeae1;
+  --color-text-dim: #a49e94;
+  --color-text-faint: #6f6a63;
+
+  /* Акценты */
+  --color-shu: #ff5a2b;
+  --color-shu-soft: #ff7448;
+  --color-shu-deep: #c73f14;
+  --color-jade: #4e9e7a;
+  --color-gold: #c9a227;
+
+  --color-line: rgba(255, 255, 255, 0.09);
+  --color-line-strong: rgba(255, 255, 255, 0.16);
+
+  --font-display: var(--font-serif), "Playfair Display", Georgia, serif;
   --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-code), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-jp: "Noto Serif JP", var(--font-serif), serif;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 html {
   scroll-behavior: smooth;
+  /* Липкая шапка не должна накрывать якорные секции. */
+  scroll-padding-top: 84px;
 }
 
 body {
-  background-color: var(--color-cream);
-  color: var(--color-ink);
+  background-color: var(--color-ink);
+  color: var(--color-text);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-/* Тонкая «бумажная» текстура фона — дешевле картинки и не грузит сеть. */
-.paper {
-  background-image:
-    radial-gradient(circle at 15% 20%, rgba(182, 72, 47, 0.05), transparent 45%),
-    radial-gradient(circle at 85% 10%, rgba(47, 93, 63, 0.06), transparent 40%);
+::selection {
+  background: var(--color-shu);
+  color: #140d09;
 }
+
+/* Фокус видим всегда — это не украшение, а единственный способ навигации с клавиатуры. */
+:focus-visible {
+  outline: 2px solid var(--color-shu);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ─── Типографика ─────────────────────────────────────────────── */
 
 .display {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: -0.01em;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.04;
 }
 
-@keyframes rise {
+.jp {
+  font-family: var(--font-jp);
+  font-weight: 400;
+}
+
+/* Мелкая моно-подпись: рубрики, цены в схеме зала, слоты времени. */
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Фактуры ─────────────────────────────────────────────────── */
+
+/*
+ * Зерно поверх тёмного фона: убирает «пластиковость» плоской заливки.
+ * SVG-шум инлайном — ни одного сетевого запроса.
+ */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.35'/%3E%3C/svg%3E");
+}
+
+/* Тушевая подсветка углов секции. */
+.wash {
+  background-image:
+    radial-gradient(70% 55% at 12% 0%, rgba(255, 90, 43, 0.09), transparent 70%),
+    radial-gradient(55% 45% at 92% 8%, rgba(78, 158, 122, 0.07), transparent 70%);
+}
+
+.hairline {
+  border-top: 1px solid var(--color-line);
+}
+
+/* ─── Движение ────────────────────────────────────────────────── */
+
+@keyframes reveal-up {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
@@ -54,15 +138,74 @@ body {
   }
 }
 
-.rise {
-  animation: rise 0.28s ease-out both;
+/*
+ * Скрываем секцию до появления в кадре ТОЛЬКО когда работает JS.
+ * Класс js ставится инлайновым скриптом до первой отрисовки, поэтому мигания нет,
+ * а при отключённом или упавшем JS страница просто видна целиком — как и должна.
+ */
+.js .reveal {
+  opacity: 0;
+}
+
+.reveal.is-visible {
+  animation: reveal-up 0.62s var(--ease-out-soft) both;
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.pop {
+  animation: pop-in 0.28s var(--ease-out-soft) both;
+}
+
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -10px, 0); }
+}
+
+.drift {
+  animation: drift 7s ease-in-out infinite;
+}
+
+/* Горизонтальные ленты (галерея, категории) — без видимой полосы прокрутки. */
+.rail {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .rise {
-    animation: none;
-  }
   html {
     scroll-behavior: auto;
+  }
+
+  /*
+   * Специфичность важна: правило должно перебивать «.js .reveal { opacity: 0 }»,
+   * иначе при отключённой анимации секции остаются невидимыми.
+   */
+  .js .reveal,
+  .js .reveal.is-visible,
+  .pop,
+  .drift {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
   }
 }

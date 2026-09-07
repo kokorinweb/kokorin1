@@ -1,18 +1,20 @@
 import { z } from "zod";
 import { getMenuItem, type MenuItem } from "./menu";
 import { RESTAURANT } from "./restaurant";
+import { findBooking, serveTimes } from "./booking";
 
 /**
  * Клиент присылает только id блюда и количество.
  * Цены НИКОГДА не приходят с фронта — их подставляет сервер из MENU.
- * Иначе любой желающий закажет оссобуко за рубль через DevTools.
+ * Иначе любой желающий закажет сет за рубль через DevTools.
  */
 export const orderLineSchema = z.object({
   itemId: z.string().min(1),
   quantity: z.number().int().min(1).max(20),
 });
 
-export const fulfillmentSchema = z.enum(["delivery", "pickup"]);
+/** Два сценария из ТЗ: забрать с собой или подать к забронированному столику. */
+export const fulfillmentSchema = z.enum(["pickup", "table"]);
 
 export const orderSchema = z.object({
   lines: z.array(orderLineSchema).min(1, "Корзина пуста").max(40),
@@ -24,7 +26,11 @@ export const orderSchema = z.object({
     .min(10, "Укажите телефон")
     .max(20)
     .regex(/^[+\d][\d\s()\-]+$/, "Телефон выглядит некорректно"),
-  address: z.string().trim().max(200).optional().default(""),
+  /** Самовывоз: во сколько гость заедет. */
+  pickupTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+  /** К столику: код брони и время подачи. */
+  bookingCode: z.string().trim().max(20).optional(),
+  serveTime: z.string().regex(/^\d{2}:\d{2}$/).optional(),
   comment: z.string().trim().max(500).optional().default(""),
 });
 
@@ -41,7 +47,6 @@ export type PricedOrder = {
   lines: PricedLine[];
   subtotal: number;
   discount: number;
-  deliveryFee: number;
   total: number;
   fulfillment: Fulfillment;
   etaMinutes: number;
@@ -69,52 +74,62 @@ export function quoteOrder(
 
   const subtotal = priced.reduce((sum, line) => sum + line.lineTotal, 0);
 
+  // Скидка только за самовывоз: за столиком её быть не должно, это другая экономика.
   const discount =
     fulfillment === "pickup"
       ? Math.round((subtotal * RESTAURANT.pickup.discountPercent) / 100)
-      : 0;
-
-  const deliveryFee =
-    fulfillment === "delivery" && subtotal > 0 && subtotal < RESTAURANT.delivery.freeFrom
-      ? RESTAURANT.delivery.fee
       : 0;
 
   return {
     lines: priced,
     subtotal,
     discount,
-    deliveryFee,
-    total: subtotal - discount + deliveryFee,
+    total: subtotal - discount,
     fulfillment,
-    etaMinutes:
-      fulfillment === "delivery"
-        ? RESTAURANT.delivery.etaMinutes
-        : RESTAURANT.pickup.etaMinutes,
+    etaMinutes: RESTAURANT.pickup.etaMinutes,
   };
 }
 
 /** То же самое, но с проверкой правил оформления. Используется только на сервере. */
-export function priceOrder(
-  lines: { itemId: string; quantity: number }[],
-  fulfillment: Fulfillment,
-): PricedOrder {
-  const quote = quoteOrder(lines, fulfillment);
+export function priceOrder(input: OrderInput): PricedOrder {
+  const quote = quoteOrder(input.lines, input.fulfillment);
 
-  if (fulfillment === "delivery" && quote.subtotal < RESTAURANT.delivery.minOrder) {
+  if (input.fulfillment === "pickup") {
+    if (!input.pickupTime) {
+      throw new OrderError("Укажите, во сколько заберёте заказ");
+    }
+    return quote;
+  }
+
+  // Заказ к столику существует только рядом с бронью — иначе некуда подавать.
+  const code = input.bookingCode?.trim().toUpperCase() ?? "";
+  if (!code) {
+    throw new OrderError("Укажите код брони — заказ подаём к забронированному столику");
+  }
+
+  const booking = findBooking(code);
+  if (!booking) {
     throw new OrderError(
-      `Минимальная сумма заказа на доставку — ${RESTAURANT.delivery.minOrder} ₽`,
+      `Бронь ${code} не найдена. Проверьте код или позвоните: ${RESTAURANT.phone}`,
     );
+  }
+
+  if (!input.serveTime) {
+    throw new OrderError("Выберите время подачи");
+  }
+  if (!serveTimes(booking.slot).includes(input.serveTime)) {
+    throw new OrderError("Это время подачи не подходит к вашей броне");
   }
 
   return quote;
 }
 
-/** Короткий читаемый номер заказа: BEL-8F3K2. */
+/** Короткий читаемый номер заказа: NORI-8F3K2. */
 export function makeOrderNumber(): string {
   const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   let tail = "";
-  for (let i = 0; i < 5; i += 1) {
+  for (let index = 0; index < 5; index += 1) {
     tail += alphabet[Math.floor(Math.random() * alphabet.length)];
   }
-  return `BEL-${tail}`;
+  return `N-${tail}`;
 }
