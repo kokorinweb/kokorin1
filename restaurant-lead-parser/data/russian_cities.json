@@ -1,0 +1,1590 @@
+{
+ "_comment": "Города России от ~100 тыс. жителей + административные центры малых регионов. Население — округлённая оценка (перепись 2021 / текущие оценки Росстата), используется только для сортировки обхода и оценки размера рынка. search_radius_km — радиус запроса к источникам вокруг центра города.",
+ "version": 1,
+ "cities": [
+  {
+   "name": "Москва",
+   "region": "Москва",
+   "federal_district": "Центральный",
+   "population": 13010112,
+   "lat": 55.7558,
+   "lon": 37.6173,
+   "search_radius_km": 35.0
+  },
+  {
+   "name": "Санкт-Петербург",
+   "region": "Санкт-Петербург",
+   "federal_district": "Северо-Западный",
+   "population": 5601911,
+   "lat": 59.9391,
+   "lon": 30.3159,
+   "search_radius_km": 35.0
+  },
+  {
+   "name": "Новосибирск",
+   "region": "Новосибирская область",
+   "federal_district": "Сибирский",
+   "population": 1633595,
+   "lat": 55.0302,
+   "lon": 82.9204,
+   "search_radius_km": 35.0
+  },
+  {
+   "name": "Екатеринбург",
+   "region": "Свердловская область",
+   "federal_district": "Уральский",
+   "population": 1493749,
+   "lat": 56.8389,
+   "lon": 60.6057,
+   "search_radius_km": 35.0
+  },
+  {
+   "name": "Казань",
+   "region": "Республика Татарстан",
+   "federal_district": "Приволжский",
+   "population": 1308660,
+   "lat": 55.7963,
+   "lon": 49.1064,
+   "search_radius_km": 34.8
+  },
+  {
+   "name": "Нижний Новгород",
+   "region": "Нижегородская область",
+   "federal_district": "Приволжский",
+   "population": 1228199,
+   "lat": 56.3269,
+   "lon": 44.0059,
+   "search_radius_km": 33.0
+  },
+  {
+   "name": "Челябинск",
+   "region": "Челябинская область",
+   "federal_district": "Уральский",
+   "population": 1189525,
+   "lat": 55.1599,
+   "lon": 61.4026,
+   "search_radius_km": 32.2
+  },
+  {
+   "name": "Красноярск",
+   "region": "Красноярский край",
+   "federal_district": "Сибирский",
+   "population": 1187771,
+   "lat": 56.0153,
+   "lon": 92.8932,
+   "search_radius_km": 32.1
+  },
+  {
+   "name": "Самара",
+   "region": "Самарская область",
+   "federal_district": "Приволжский",
+   "population": 1173299,
+   "lat": 53.1959,
+   "lon": 50.1002,
+   "search_radius_km": 31.8
+  },
+  {
+   "name": "Уфа",
+   "region": "Республика Башкортостан",
+   "federal_district": "Приволжский",
+   "population": 1144809,
+   "lat": 54.7388,
+   "lon": 55.9721,
+   "search_radius_km": 31.2
+  },
+  {
+   "name": "Ростов-на-Дону",
+   "region": "Ростовская область",
+   "federal_district": "Южный",
+   "population": 1142162,
+   "lat": 47.2225,
+   "lon": 39.7189,
+   "search_radius_km": 31.1
+  },
+  {
+   "name": "Омск",
+   "region": "Омская область",
+   "federal_district": "Сибирский",
+   "population": 1125695,
+   "lat": 54.9885,
+   "lon": 73.3242,
+   "search_radius_km": 30.8
+  },
+  {
+   "name": "Краснодар",
+   "region": "Краснодарский край",
+   "federal_district": "Южный",
+   "population": 1099344,
+   "lat": 45.0355,
+   "lon": 38.9753,
+   "search_radius_km": 30.2
+  },
+  {
+   "name": "Воронеж",
+   "region": "Воронежская область",
+   "federal_district": "Центральный",
+   "population": 1057681,
+   "lat": 51.672,
+   "lon": 39.1843,
+   "search_radius_km": 29.3
+  },
+  {
+   "name": "Пермь",
+   "region": "Пермский край",
+   "federal_district": "Приволжский",
+   "population": 1034002,
+   "lat": 58.0105,
+   "lon": 56.2502,
+   "search_radius_km": 28.7
+  },
+  {
+   "name": "Волгоград",
+   "region": "Волгоградская область",
+   "federal_district": "Южный",
+   "population": 1028036,
+   "lat": 48.708,
+   "lon": 44.5133,
+   "search_radius_km": 28.6
+  },
+  {
+   "name": "Саратов",
+   "region": "Саратовская область",
+   "federal_district": "Приволжский",
+   "population": 901361,
+   "lat": 51.5336,
+   "lon": 46.0343,
+   "search_radius_km": 25.8
+  },
+  {
+   "name": "Тюмень",
+   "region": "Тюменская область",
+   "federal_district": "Уральский",
+   "population": 847488,
+   "lat": 57.1522,
+   "lon": 65.5272,
+   "search_radius_km": 24.6
+  },
+  {
+   "name": "Тольятти",
+   "region": "Самарская область",
+   "federal_district": "Приволжский",
+   "population": 684709,
+   "lat": 53.5078,
+   "lon": 49.4204,
+   "search_radius_km": 21.1
+  },
+  {
+   "name": "Ижевск",
+   "region": "Удмуртская Республика",
+   "federal_district": "Приволжский",
+   "population": 648213,
+   "lat": 56.8527,
+   "lon": 53.2115,
+   "search_radius_km": 20.3
+  },
+  {
+   "name": "Барнаул",
+   "region": "Алтайский край",
+   "federal_district": "Сибирский",
+   "population": 630877,
+   "lat": 53.3548,
+   "lon": 83.7698,
+   "search_radius_km": 19.9
+  },
+  {
+   "name": "Ульяновск",
+   "region": "Ульяновская область",
+   "federal_district": "Приволжский",
+   "population": 627705,
+   "lat": 54.3142,
+   "lon": 48.4031,
+   "search_radius_km": 19.8
+  },
+  {
+   "name": "Махачкала",
+   "region": "Республика Дагестан",
+   "federal_district": "Северо-Кавказский",
+   "population": 623254,
+   "lat": 42.9764,
+   "lon": 47.5024,
+   "search_radius_km": 19.7
+  },
+  {
+   "name": "Иркутск",
+   "region": "Иркутская область",
+   "federal_district": "Сибирский",
+   "population": 617515,
+   "lat": 52.287,
+   "lon": 104.305,
+   "search_radius_km": 19.6
+  },
+  {
+   "name": "Хабаровск",
+   "region": "Хабаровский край",
+   "federal_district": "Дальневосточный",
+   "population": 617441,
+   "lat": 48.4827,
+   "lon": 135.0838,
+   "search_radius_km": 19.6
+  },
+  {
+   "name": "Владивосток",
+   "region": "Приморский край",
+   "federal_district": "Дальневосточный",
+   "population": 603519,
+   "lat": 43.1155,
+   "lon": 131.8855,
+   "search_radius_km": 19.3
+  },
+  {
+   "name": "Ярославль",
+   "region": "Ярославская область",
+   "federal_district": "Центральный",
+   "population": 577279,
+   "lat": 57.6261,
+   "lon": 39.8845,
+   "search_radius_km": 18.7
+  },
+  {
+   "name": "Томск",
+   "region": "Томская область",
+   "federal_district": "Сибирский",
+   "population": 568508,
+   "lat": 56.4846,
+   "lon": 84.9476,
+   "search_radius_km": 18.5
+  },
+  {
+   "name": "Кемерово",
+   "region": "Кемеровская область",
+   "federal_district": "Сибирский",
+   "population": 556382,
+   "lat": 55.3547,
+   "lon": 86.0873,
+   "search_radius_km": 18.2
+  },
+  {
+   "name": "Оренбург",
+   "region": "Оренбургская область",
+   "federal_district": "Приволжский",
+   "population": 547256,
+   "lat": 51.7682,
+   "lon": 55.0969,
+   "search_radius_km": 18.0
+  },
+  {
+   "name": "Новокузнецк",
+   "region": "Кемеровская область",
+   "federal_district": "Сибирский",
+   "population": 544583,
+   "lat": 53.7596,
+   "lon": 87.1216,
+   "search_radius_km": 18.0
+  },
+  {
+   "name": "Рязань",
+   "region": "Рязанская область",
+   "federal_district": "Центральный",
+   "population": 538962,
+   "lat": 54.6269,
+   "lon": 39.6916,
+   "search_radius_km": 17.9
+  },
+  {
+   "name": "Набережные Челны",
+   "region": "Республика Татарстан",
+   "federal_district": "Приволжский",
+   "population": 533839,
+   "lat": 55.7436,
+   "lon": 52.3958,
+   "search_radius_km": 17.7
+  },
+  {
+   "name": "Астрахань",
+   "region": "Астраханская область",
+   "federal_district": "Южный",
+   "population": 524371,
+   "lat": 46.3497,
+   "lon": 48.0408,
+   "search_radius_km": 17.5
+  },
+  {
+   "name": "Киров",
+   "region": "Кировская область",
+   "federal_district": "Приволжский",
+   "population": 518348,
+   "lat": 58.6035,
+   "lon": 49.6679,
+   "search_radius_km": 17.4
+  },
+  {
+   "name": "Пенза",
+   "region": "Пензенская область",
+   "federal_district": "Приволжский",
+   "population": 516450,
+   "lat": 53.2007,
+   "lon": 45.0046,
+   "search_radius_km": 17.4
+  },
+  {
+   "name": "Севастополь",
+   "region": "Севастополь",
+   "federal_district": "Южный",
+   "population": 509992,
+   "lat": 44.6167,
+   "lon": 33.5254,
+   "search_radius_km": 17.2
+  },
+  {
+   "name": "Балашиха",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 507366,
+   "lat": 55.7963,
+   "lon": 37.9384,
+   "search_radius_km": 17.2
+  },
+  {
+   "name": "Калининград",
+   "region": "Калининградская область",
+   "federal_district": "Северо-Западный",
+   "population": 498260,
+   "lat": 54.7104,
+   "lon": 20.4522,
+   "search_radius_km": 17.0
+  },
+  {
+   "name": "Чебоксары",
+   "region": "Чувашская Республика",
+   "federal_district": "Приволжский",
+   "population": 497618,
+   "lat": 56.1439,
+   "lon": 47.2489,
+   "search_radius_km": 16.9
+  },
+  {
+   "name": "Липецк",
+   "region": "Липецкая область",
+   "federal_district": "Центральный",
+   "population": 496556,
+   "lat": 52.6031,
+   "lon": 39.5708,
+   "search_radius_km": 16.9
+  },
+  {
+   "name": "Тула",
+   "region": "Тульская область",
+   "federal_district": "Центральный",
+   "population": 466968,
+   "lat": 54.1961,
+   "lon": 37.6182,
+   "search_radius_km": 16.3
+  },
+  {
+   "name": "Сочи",
+   "region": "Краснодарский край",
+   "federal_district": "Южный",
+   "population": 466078,
+   "lat": 43.5855,
+   "lon": 39.7231,
+   "search_radius_km": 16.3
+  },
+  {
+   "name": "Ставрополь",
+   "region": "Ставропольский край",
+   "federal_district": "Северо-Кавказский",
+   "population": 454269,
+   "lat": 45.0428,
+   "lon": 41.9734,
+   "search_radius_km": 16.0
+  },
+  {
+   "name": "Курск",
+   "region": "Курская область",
+   "federal_district": "Центральный",
+   "population": 449063,
+   "lat": 51.7304,
+   "lon": 36.1926,
+   "search_radius_km": 15.9
+  },
+  {
+   "name": "Улан-Удэ",
+   "region": "Республика Бурятия",
+   "federal_district": "Дальневосточный",
+   "population": 436138,
+   "lat": 51.8335,
+   "lon": 107.5841,
+   "search_radius_km": 15.6
+  },
+  {
+   "name": "Тверь",
+   "region": "Тверская область",
+   "federal_district": "Центральный",
+   "population": 424969,
+   "lat": 56.8587,
+   "lon": 35.9176,
+   "search_radius_km": 15.3
+  },
+  {
+   "name": "Магнитогорск",
+   "region": "Челябинская область",
+   "federal_district": "Уральский",
+   "population": 413253,
+   "lat": 53.4186,
+   "lon": 59.0472,
+   "search_radius_km": 15.1
+  },
+  {
+   "name": "Иваново",
+   "region": "Ивановская область",
+   "federal_district": "Центральный",
+   "population": 401494,
+   "lat": 57.0004,
+   "lon": 40.9739,
+   "search_radius_km": 14.8
+  },
+  {
+   "name": "Сургут",
+   "region": "Ханты-Мансийский автономный округ — Югра",
+   "federal_district": "Уральский",
+   "population": 396443,
+   "lat": 61.254,
+   "lon": 73.3962,
+   "search_radius_km": 14.7
+  },
+  {
+   "name": "Брянск",
+   "region": "Брянская область",
+   "federal_district": "Центральный",
+   "population": 379152,
+   "lat": 53.2434,
+   "lon": 34.3639,
+   "search_radius_km": 14.3
+  },
+  {
+   "name": "Якутск",
+   "region": "Республика Саха (Якутия)",
+   "federal_district": "Дальневосточный",
+   "population": 355443,
+   "lat": 62.0281,
+   "lon": 129.7326,
+   "search_radius_km": 13.8
+  },
+  {
+   "name": "Владимир",
+   "region": "Владимирская область",
+   "federal_district": "Центральный",
+   "population": 348256,
+   "lat": 56.129,
+   "lon": 40.407,
+   "search_radius_km": 13.7
+  },
+  {
+   "name": "Архангельск",
+   "region": "Архангельская область",
+   "federal_district": "Северо-Западный",
+   "population": 346979,
+   "lat": 64.5393,
+   "lon": 40.5152,
+   "search_radius_km": 13.6
+  },
+  {
+   "name": "Нижний Тагил",
+   "region": "Свердловская область",
+   "federal_district": "Уральский",
+   "population": 344364,
+   "lat": 57.9195,
+   "lon": 59.965,
+   "search_radius_km": 13.6
+  },
+  {
+   "name": "Симферополь",
+   "region": "Республика Крым",
+   "federal_district": "Южный",
+   "population": 340540,
+   "lat": 44.9521,
+   "lon": 34.1024,
+   "search_radius_km": 13.5
+  },
+  {
+   "name": "Подольск",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 336000,
+   "lat": 55.4312,
+   "lon": 37.5447,
+   "search_radius_km": 13.4
+  },
+  {
+   "name": "Чита",
+   "region": "Забайкальский край",
+   "federal_district": "Дальневосточный",
+   "population": 334427,
+   "lat": 52.034,
+   "lon": 113.4994,
+   "search_radius_km": 13.4
+  },
+  {
+   "name": "Белгород",
+   "region": "Белгородская область",
+   "federal_district": "Центральный",
+   "population": 333579,
+   "lat": 50.5952,
+   "lon": 36.5873,
+   "search_radius_km": 13.3
+  },
+  {
+   "name": "Калуга",
+   "region": "Калужская область",
+   "federal_district": "Центральный",
+   "population": 331376,
+   "lat": 54.5138,
+   "lon": 36.2612,
+   "search_radius_km": 13.3
+  },
+  {
+   "name": "Смоленск",
+   "region": "Смоленская область",
+   "federal_district": "Центральный",
+   "population": 325495,
+   "lat": 54.7818,
+   "lon": 32.0401,
+   "search_radius_km": 13.2
+  },
+  {
+   "name": "Грозный",
+   "region": "Чеченская Республика",
+   "federal_district": "Северо-Кавказский",
+   "population": 324698,
+   "lat": 43.3169,
+   "lon": 45.6981,
+   "search_radius_km": 13.1
+  },
+  {
+   "name": "Волжский",
+   "region": "Волгоградская область",
+   "federal_district": "Южный",
+   "population": 323293,
+   "lat": 48.7861,
+   "lon": 44.7797,
+   "search_radius_km": 13.1
+  },
+  {
+   "name": "Саранск",
+   "region": "Республика Мордовия",
+   "federal_district": "Приволжский",
+   "population": 316382,
+   "lat": 54.1838,
+   "lon": 45.1749,
+   "search_radius_km": 13.0
+  },
+  {
+   "name": "Череповец",
+   "region": "Вологодская область",
+   "federal_district": "Северо-Западный",
+   "population": 312310,
+   "lat": 59.1269,
+   "lon": 37.9093,
+   "search_radius_km": 12.9
+  },
+  {
+   "name": "Курган",
+   "region": "Курганская область",
+   "federal_district": "Уральский",
+   "population": 309282,
+   "lat": 55.4408,
+   "lon": 65.3411,
+   "search_radius_km": 12.8
+  },
+  {
+   "name": "Вологда",
+   "region": "Вологодская область",
+   "federal_district": "Северо-Западный",
+   "population": 308177,
+   "lat": 59.2205,
+   "lon": 39.8915,
+   "search_radius_km": 12.8
+  },
+  {
+   "name": "Орёл",
+   "region": "Орловская область",
+   "federal_district": "Центральный",
+   "population": 303720,
+   "lat": 52.9686,
+   "lon": 36.0692,
+   "search_radius_km": 12.7
+  },
+  {
+   "name": "Владикавказ",
+   "region": "Республика Северная Осетия — Алания",
+   "federal_district": "Северо-Кавказский",
+   "population": 295359,
+   "lat": 43.037,
+   "lon": 44.683,
+   "search_radius_km": 12.5
+  },
+  {
+   "name": "Мурманск",
+   "region": "Мурманская область",
+   "federal_district": "Северо-Западный",
+   "population": 282851,
+   "lat": 68.9585,
+   "lon": 33.0827,
+   "search_radius_km": 12.2
+  },
+  {
+   "name": "Петрозаводск",
+   "region": "Республика Карелия",
+   "federal_district": "Северо-Западный",
+   "population": 280890,
+   "lat": 61.7849,
+   "lon": 34.3469,
+   "search_radius_km": 12.2
+  },
+  {
+   "name": "Нижневартовск",
+   "region": "Ханты-Мансийский автономный округ — Югра",
+   "federal_district": "Уральский",
+   "population": 279000,
+   "lat": 60.9344,
+   "lon": 76.5531,
+   "search_radius_km": 12.1
+  },
+  {
+   "name": "Новороссийск",
+   "region": "Краснодарский край",
+   "federal_district": "Южный",
+   "population": 275795,
+   "lat": 44.7239,
+   "lon": 37.7686,
+   "search_radius_km": 12.1
+  },
+  {
+   "name": "Стерлитамак",
+   "region": "Республика Башкортостан",
+   "federal_district": "Приволжский",
+   "population": 274890,
+   "lat": 53.6304,
+   "lon": 55.931,
+   "search_radius_km": 12.0
+  },
+  {
+   "name": "Тамбов",
+   "region": "Тамбовская область",
+   "federal_district": "Центральный",
+   "population": 274052,
+   "lat": 52.7213,
+   "lon": 41.4523,
+   "search_radius_km": 12.0
+  },
+  {
+   "name": "Йошкар-Ола",
+   "region": "Республика Марий Эл",
+   "federal_district": "Приволжский",
+   "population": 274000,
+   "lat": 56.6388,
+   "lon": 47.8908,
+   "search_radius_km": 12.0
+  },
+  {
+   "name": "Кострома",
+   "region": "Костромская область",
+   "federal_district": "Центральный",
+   "population": 271000,
+   "lat": 57.7677,
+   "lon": 40.9269,
+   "search_radius_km": 12.0
+  },
+  {
+   "name": "Мытищи",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 265000,
+   "lat": 55.9116,
+   "lon": 37.7308,
+   "search_radius_km": 11.8
+  },
+  {
+   "name": "Химки",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 259550,
+   "lat": 55.897,
+   "lon": 37.4297,
+   "search_radius_km": 11.7
+  },
+  {
+   "name": "Таганрог",
+   "region": "Ростовская область",
+   "federal_district": "Южный",
+   "population": 245000,
+   "lat": 47.2362,
+   "lon": 38.8969,
+   "search_radius_km": 11.4
+  },
+  {
+   "name": "Благовещенск",
+   "region": "Амурская область",
+   "federal_district": "Дальневосточный",
+   "population": 241000,
+   "lat": 50.2907,
+   "lon": 127.5272,
+   "search_radius_km": 11.3
+  },
+  {
+   "name": "Комсомольск-на-Амуре",
+   "region": "Хабаровский край",
+   "federal_district": "Дальневосточный",
+   "population": 239000,
+   "lat": 50.5501,
+   "lon": 137.0079,
+   "search_radius_km": 11.3
+  },
+  {
+   "name": "Нальчик",
+   "region": "Кабардино-Балкарская Республика",
+   "federal_district": "Северо-Кавказский",
+   "population": 239000,
+   "lat": 43.4981,
+   "lon": 43.6189,
+   "search_radius_km": 11.3
+  },
+  {
+   "name": "Нижнекамск",
+   "region": "Республика Татарстан",
+   "federal_district": "Приволжский",
+   "population": 238000,
+   "lat": 55.6366,
+   "lon": 51.8245,
+   "search_radius_km": 11.2
+  },
+  {
+   "name": "Сыктывкар",
+   "region": "Республика Коми",
+   "federal_district": "Северо-Западный",
+   "population": 231000,
+   "lat": 61.6688,
+   "lon": 50.836,
+   "search_radius_km": 11.1
+  },
+  {
+   "name": "Шахты",
+   "region": "Ростовская область",
+   "federal_district": "Южный",
+   "population": 229000,
+   "lat": 47.7085,
+   "lon": 40.2159,
+   "search_radius_km": 11.0
+  },
+  {
+   "name": "Дзержинск",
+   "region": "Нижегородская область",
+   "federal_district": "Приволжский",
+   "population": 227000,
+   "lat": 56.2376,
+   "lon": 43.4604,
+   "search_radius_km": 11.0
+  },
+  {
+   "name": "Братск",
+   "region": "Иркутская область",
+   "federal_district": "Сибирский",
+   "population": 226000,
+   "lat": 56.1516,
+   "lon": 101.634,
+   "search_radius_km": 11.0
+  },
+  {
+   "name": "Энгельс",
+   "region": "Саратовская область",
+   "federal_district": "Приволжский",
+   "population": 226000,
+   "lat": 51.4839,
+   "lon": 46.1105,
+   "search_radius_km": 11.0
+  },
+  {
+   "name": "Королёв",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 225000,
+   "lat": 55.9142,
+   "lon": 37.8255,
+   "search_radius_km": 10.9
+  },
+  {
+   "name": "Ангарск",
+   "region": "Иркутская область",
+   "federal_district": "Сибирский",
+   "population": 224000,
+   "lat": 52.5406,
+   "lon": 103.8886,
+   "search_radius_km": 10.9
+  },
+  {
+   "name": "Великий Новгород",
+   "region": "Новгородская область",
+   "federal_district": "Северо-Западный",
+   "population": 224000,
+   "lat": 58.5215,
+   "lon": 31.2755,
+   "search_radius_km": 10.9
+  },
+  {
+   "name": "Старый Оскол",
+   "region": "Белгородская область",
+   "federal_district": "Центральный",
+   "population": 223000,
+   "lat": 51.2966,
+   "lon": 37.8353,
+   "search_radius_km": 10.9
+  },
+  {
+   "name": "Люберцы",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 205000,
+   "lat": 55.6758,
+   "lon": 37.8938,
+   "search_radius_km": 10.5
+  },
+  {
+   "name": "Бийск",
+   "region": "Алтайский край",
+   "federal_district": "Сибирский",
+   "population": 200000,
+   "lat": 52.5393,
+   "lon": 85.2072,
+   "search_radius_km": 10.4
+  },
+  {
+   "name": "Южно-Сахалинск",
+   "region": "Сахалинская область",
+   "federal_district": "Дальневосточный",
+   "population": 200000,
+   "lat": 46.9591,
+   "lon": 142.738,
+   "search_radius_km": 10.4
+  },
+  {
+   "name": "Псков",
+   "region": "Псковская область",
+   "federal_district": "Северо-Западный",
+   "population": 193000,
+   "lat": 57.8194,
+   "lon": 28.3324,
+   "search_radius_km": 10.2
+  },
+  {
+   "name": "Армавир",
+   "region": "Краснодарский край",
+   "federal_district": "Южный",
+   "population": 190000,
+   "lat": 44.9892,
+   "lon": 41.1234,
+   "search_radius_km": 10.2
+  },
+  {
+   "name": "Абакан",
+   "region": "Республика Хакасия",
+   "federal_district": "Сибирский",
+   "population": 187000,
+   "lat": 53.7156,
+   "lon": 91.4292,
+   "search_radius_km": 10.1
+  },
+  {
+   "name": "Балаково",
+   "region": "Саратовская область",
+   "federal_district": "Приволжский",
+   "population": 186000,
+   "lat": 52.0209,
+   "lon": 47.8007,
+   "search_radius_km": 10.1
+  },
+  {
+   "name": "Норильск",
+   "region": "Красноярский край",
+   "federal_district": "Сибирский",
+   "population": 182000,
+   "lat": 69.3558,
+   "lon": 88.1893,
+   "search_radius_km": 10.0
+  },
+  {
+   "name": "Прокопьевск",
+   "region": "Кемеровская область",
+   "federal_district": "Сибирский",
+   "population": 181000,
+   "lat": 53.9058,
+   "lon": 86.7195,
+   "search_radius_km": 10.0
+  },
+  {
+   "name": "Рыбинск",
+   "region": "Ярославская область",
+   "federal_district": "Центральный",
+   "population": 180000,
+   "lat": 58.0446,
+   "lon": 38.8428,
+   "search_radius_km": 10.0
+  },
+  {
+   "name": "Уссурийск",
+   "region": "Приморский край",
+   "federal_district": "Дальневосточный",
+   "population": 178000,
+   "lat": 43.7973,
+   "lon": 131.9512,
+   "search_radius_km": 9.9
+  },
+  {
+   "name": "Северодвинск",
+   "region": "Архангельская область",
+   "federal_district": "Северо-Западный",
+   "population": 177000,
+   "lat": 64.5635,
+   "lon": 39.8302,
+   "search_radius_km": 9.9
+  },
+  {
+   "name": "Красногорск",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 175000,
+   "lat": 55.8318,
+   "lon": 37.3302,
+   "search_radius_km": 9.8
+  },
+  {
+   "name": "Волгодонск",
+   "region": "Ростовская область",
+   "federal_district": "Южный",
+   "population": 168000,
+   "lat": 47.5165,
+   "lon": 42.1516,
+   "search_radius_km": 9.7
+  },
+  {
+   "name": "Новочеркасск",
+   "region": "Ростовская область",
+   "federal_district": "Южный",
+   "population": 165000,
+   "lat": 47.4224,
+   "lon": 40.0938,
+   "search_radius_km": 9.6
+  },
+  {
+   "name": "Каменск-Уральский",
+   "region": "Свердловская область",
+   "federal_district": "Уральский",
+   "population": 165000,
+   "lat": 56.4149,
+   "lon": 61.9187,
+   "search_radius_km": 9.6
+  },
+  {
+   "name": "Сызрань",
+   "region": "Самарская область",
+   "federal_district": "Приволжский",
+   "population": 164000,
+   "lat": 53.1585,
+   "lon": 48.4741,
+   "search_radius_km": 9.6
+  },
+  {
+   "name": "Петропавловск-Камчатский",
+   "region": "Камчатский край",
+   "federal_district": "Дальневосточный",
+   "population": 164000,
+   "lat": 53.037,
+   "lon": 158.6559,
+   "search_radius_km": 9.6
+  },
+  {
+   "name": "Златоуст",
+   "region": "Челябинская область",
+   "federal_district": "Уральский",
+   "population": 158000,
+   "lat": 55.1714,
+   "lon": 59.6501,
+   "search_radius_km": 9.5
+  },
+  {
+   "name": "Электросталь",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 158000,
+   "lat": 55.7847,
+   "lon": 38.4447,
+   "search_radius_km": 9.5
+  },
+  {
+   "name": "Альметьевск",
+   "region": "Республика Татарстан",
+   "federal_district": "Приволжский",
+   "population": 158000,
+   "lat": 54.9014,
+   "lon": 52.297,
+   "search_radius_km": 9.5
+  },
+  {
+   "name": "Пятигорск",
+   "region": "Ставропольский край",
+   "federal_district": "Северо-Кавказский",
+   "population": 152000,
+   "lat": 44.0486,
+   "lon": 43.0594,
+   "search_radius_km": 9.3
+  },
+  {
+   "name": "Салават",
+   "region": "Республика Башкортостан",
+   "federal_district": "Приволжский",
+   "population": 150000,
+   "lat": 53.3616,
+   "lon": 55.9245,
+   "search_radius_km": 9.3
+  },
+  {
+   "name": "Миасс",
+   "region": "Челябинская область",
+   "federal_district": "Уральский",
+   "population": 150000,
+   "lat": 55.0455,
+   "lon": 60.1084,
+   "search_radius_km": 9.3
+  },
+  {
+   "name": "Хасавюрт",
+   "region": "Республика Дагестан",
+   "federal_district": "Северо-Кавказский",
+   "population": 150000,
+   "lat": 43.2506,
+   "lon": 46.5871,
+   "search_radius_km": 9.3
+  },
+  {
+   "name": "Копейск",
+   "region": "Челябинская область",
+   "federal_district": "Уральский",
+   "population": 148000,
+   "lat": 55.1163,
+   "lon": 61.6202,
+   "search_radius_km": 9.3
+  },
+  {
+   "name": "Керчь",
+   "region": "Республика Крым",
+   "federal_district": "Южный",
+   "population": 148000,
+   "lat": 45.356,
+   "lon": 36.4674,
+   "search_radius_km": 9.3
+  },
+  {
+   "name": "Рубцовск",
+   "region": "Алтайский край",
+   "federal_district": "Сибирский",
+   "population": 141000,
+   "lat": 51.5011,
+   "lon": 81.2076,
+   "search_radius_km": 9.1
+  },
+  {
+   "name": "Нефтекамск",
+   "region": "Республика Башкортостан",
+   "federal_district": "Приволжский",
+   "population": 141000,
+   "lat": 56.0891,
+   "lon": 54.2489,
+   "search_radius_km": 9.1
+  },
+  {
+   "name": "Майкоп",
+   "region": "Республика Адыгея",
+   "federal_district": "Южный",
+   "population": 141000,
+   "lat": 44.6098,
+   "lon": 40.1006,
+   "search_radius_km": 9.1
+  },
+  {
+   "name": "Одинцово",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 140000,
+   "lat": 55.6789,
+   "lon": 37.2634,
+   "search_radius_km": 9.1
+  },
+  {
+   "name": "Коломна",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 140000,
+   "lat": 55.0794,
+   "lon": 38.7783,
+   "search_radius_km": 9.1
+  },
+  {
+   "name": "Домодедово",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 137000,
+   "lat": 55.437,
+   "lon": 37.7686,
+   "search_radius_km": 9.0
+  },
+  {
+   "name": "Березники",
+   "region": "Пермский край",
+   "federal_district": "Приволжский",
+   "population": 137000,
+   "lat": 59.4083,
+   "lon": 56.8064,
+   "search_radius_km": 9.0
+  },
+  {
+   "name": "Ковров",
+   "region": "Владимирская область",
+   "federal_district": "Центральный",
+   "population": 132000,
+   "lat": 56.3595,
+   "lon": 41.3197,
+   "search_radius_km": 8.9
+  },
+  {
+   "name": "Кисловодск",
+   "region": "Ставропольский край",
+   "federal_district": "Северо-Кавказский",
+   "population": 130000,
+   "lat": 43.9052,
+   "lon": 42.7286,
+   "search_radius_km": 8.9
+  },
+  {
+   "name": "Щёлково",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 128000,
+   "lat": 55.921,
+   "lon": 38.0,
+   "search_radius_km": 8.8
+  },
+  {
+   "name": "Батайск",
+   "region": "Ростовская область",
+   "federal_district": "Южный",
+   "population": 127000,
+   "lat": 47.1381,
+   "lon": 39.7519,
+   "search_radius_km": 8.8
+  },
+  {
+   "name": "Нефтеюганск",
+   "region": "Ханты-Мансийский автономный округ — Югра",
+   "federal_district": "Уральский",
+   "population": 127000,
+   "lat": 61.0994,
+   "lon": 72.6032,
+   "search_radius_km": 8.8
+  },
+  {
+   "name": "Обнинск",
+   "region": "Калужская область",
+   "federal_district": "Центральный",
+   "population": 126000,
+   "lat": 55.0968,
+   "lon": 36.6111,
+   "search_radius_km": 8.8
+  },
+  {
+   "name": "Каспийск",
+   "region": "Республика Дагестан",
+   "federal_district": "Северо-Кавказский",
+   "population": 125000,
+   "lat": 42.8814,
+   "lon": 47.6367,
+   "search_radius_km": 8.8
+  },
+  {
+   "name": "Серпухов",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 125000,
+   "lat": 54.9146,
+   "lon": 37.4117,
+   "search_radius_km": 8.8
+  },
+  {
+   "name": "Дербент",
+   "region": "Республика Дагестан",
+   "federal_district": "Северо-Кавказский",
+   "population": 125000,
+   "lat": 42.0678,
+   "lon": 48.2899,
+   "search_radius_km": 8.8
+  },
+  {
+   "name": "Новочебоксарск",
+   "region": "Чувашская Республика",
+   "federal_district": "Приволжский",
+   "population": 124000,
+   "lat": 56.1094,
+   "lon": 47.4794,
+   "search_radius_km": 8.7
+  },
+  {
+   "name": "Черкесск",
+   "region": "Карачаево-Черкесская Республика",
+   "federal_district": "Северо-Кавказский",
+   "population": 122000,
+   "lat": 44.2269,
+   "lon": 42.0466,
+   "search_radius_km": 8.7
+  },
+  {
+   "name": "Новомосковск",
+   "region": "Тульская область",
+   "federal_district": "Центральный",
+   "population": 122000,
+   "lat": 54.011,
+   "lon": 38.2894,
+   "search_radius_km": 8.7
+  },
+  {
+   "name": "Назрань",
+   "region": "Республика Ингушетия",
+   "federal_district": "Северо-Кавказский",
+   "population": 122000,
+   "lat": 43.2257,
+   "lon": 44.7642,
+   "search_radius_km": 8.7
+  },
+  {
+   "name": "Первоуральск",
+   "region": "Свердловская область",
+   "federal_district": "Уральский",
+   "population": 121000,
+   "lat": 56.908,
+   "lon": 59.942,
+   "search_radius_km": 8.7
+  },
+  {
+   "name": "Кызыл",
+   "region": "Республика Тыва",
+   "federal_district": "Сибирский",
+   "population": 120000,
+   "lat": 51.7191,
+   "lon": 94.4378,
+   "search_radius_km": 8.6
+  },
+  {
+   "name": "Раменское",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 118000,
+   "lat": 55.567,
+   "lon": 38.23,
+   "search_radius_km": 8.6
+  },
+  {
+   "name": "Новый Уренгой",
+   "region": "Ямало-Ненецкий автономный округ",
+   "federal_district": "Уральский",
+   "population": 118000,
+   "lat": 66.0838,
+   "lon": 76.6807,
+   "search_radius_km": 8.6
+  },
+  {
+   "name": "Орехово-Зуево",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 118000,
+   "lat": 55.8069,
+   "lon": 38.9789,
+   "search_radius_km": 8.6
+  },
+  {
+   "name": "Невинномысск",
+   "region": "Ставропольский край",
+   "federal_district": "Северо-Кавказский",
+   "population": 117000,
+   "lat": 44.6383,
+   "lon": 41.9459,
+   "search_radius_km": 8.6
+  },
+  {
+   "name": "Долгопрудный",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 116000,
+   "lat": 55.9386,
+   "lon": 37.5081,
+   "search_radius_km": 8.6
+  },
+  {
+   "name": "Ессентуки",
+   "region": "Ставропольский край",
+   "federal_district": "Северо-Кавказский",
+   "population": 116000,
+   "lat": 44.0447,
+   "lon": 42.8582,
+   "search_radius_km": 8.6
+  },
+  {
+   "name": "Октябрьский",
+   "region": "Республика Башкортостан",
+   "federal_district": "Приволжский",
+   "population": 113000,
+   "lat": 54.4815,
+   "lon": 53.4655,
+   "search_radius_km": 8.5
+  },
+  {
+   "name": "Димитровград",
+   "region": "Ульяновская область",
+   "federal_district": "Приволжский",
+   "population": 112000,
+   "lat": 54.227,
+   "lon": 49.6209,
+   "search_radius_km": 8.5
+  },
+  {
+   "name": "Пушкино",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 110000,
+   "lat": 56.0106,
+   "lon": 37.8471,
+   "search_radius_km": 8.4
+  },
+  {
+   "name": "Камышин",
+   "region": "Волгоградская область",
+   "federal_district": "Южный",
+   "population": 108000,
+   "lat": 50.0794,
+   "lon": 45.4033,
+   "search_radius_km": 8.4
+  },
+  {
+   "name": "Жуковский",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 108000,
+   "lat": 55.5952,
+   "lon": 38.12,
+   "search_radius_km": 8.4
+  },
+  {
+   "name": "Реутов",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 108000,
+   "lat": 55.7586,
+   "lon": 37.8567,
+   "search_radius_km": 8.4
+  },
+  {
+   "name": "Евпатория",
+   "region": "Республика Крым",
+   "federal_district": "Южный",
+   "population": 108000,
+   "lat": 45.1904,
+   "lon": 33.3668,
+   "search_radius_km": 8.4
+  },
+  {
+   "name": "Муром",
+   "region": "Владимирская область",
+   "federal_district": "Центральный",
+   "population": 106000,
+   "lat": 55.5731,
+   "lon": 42.0526,
+   "search_radius_km": 8.3
+  },
+  {
+   "name": "Ноябрьск",
+   "region": "Ямало-Ненецкий автономный округ",
+   "federal_district": "Уральский",
+   "population": 106000,
+   "lat": 63.1935,
+   "lon": 75.4514,
+   "search_radius_km": 8.3
+  },
+  {
+   "name": "Северск",
+   "region": "Томская область",
+   "federal_district": "Сибирский",
+   "population": 105000,
+   "lat": 56.6031,
+   "lon": 84.8907,
+   "search_radius_km": 8.3
+  },
+  {
+   "name": "Артём",
+   "region": "Приморский край",
+   "federal_district": "Дальневосточный",
+   "population": 105000,
+   "lat": 43.3528,
+   "lon": 132.1892,
+   "search_radius_km": 8.3
+  },
+  {
+   "name": "Ачинск",
+   "region": "Красноярский край",
+   "federal_district": "Сибирский",
+   "population": 105000,
+   "lat": 56.2691,
+   "lon": 90.4995,
+   "search_radius_km": 8.3
+  },
+  {
+   "name": "Ханты-Мансийск",
+   "region": "Ханты-Мансийский автономный округ — Югра",
+   "federal_district": "Уральский",
+   "population": 105000,
+   "lat": 61.0042,
+   "lon": 69.0019,
+   "search_radius_km": 8.3
+  },
+  {
+   "name": "Элиста",
+   "region": "Республика Калмыкия",
+   "federal_district": "Южный",
+   "population": 103000,
+   "lat": 46.3078,
+   "lon": 44.2558,
+   "search_radius_km": 8.3
+  },
+  {
+   "name": "Тобольск",
+   "region": "Тюменская область",
+   "federal_district": "Уральский",
+   "population": 103000,
+   "lat": 58.199,
+   "lon": 68.254,
+   "search_radius_km": 8.3
+  },
+  {
+   "name": "Бердск",
+   "region": "Новосибирская область",
+   "federal_district": "Сибирский",
+   "population": 103000,
+   "lat": 54.7583,
+   "lon": 83.1069,
+   "search_radius_km": 8.3
+  },
+  {
+   "name": "Арзамас",
+   "region": "Нижегородская область",
+   "federal_district": "Приволжский",
+   "population": 102000,
+   "lat": 55.3947,
+   "lon": 43.8405,
+   "search_radius_km": 8.2
+  },
+  {
+   "name": "Новокуйбышевск",
+   "region": "Самарская область",
+   "federal_district": "Приволжский",
+   "population": 100000,
+   "lat": 53.0955,
+   "lon": 49.9459,
+   "search_radius_km": 8.2
+  },
+  {
+   "name": "Сергиев Посад",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 100000,
+   "lat": 56.3153,
+   "lon": 38.136,
+   "search_radius_km": 8.2
+  },
+  {
+   "name": "Ногинск",
+   "region": "Московская область",
+   "federal_district": "Центральный",
+   "population": 100000,
+   "lat": 55.8544,
+   "lon": 38.4443,
+   "search_radius_km": 8.2
+  },
+  {
+   "name": "Гатчина",
+   "region": "Ленинградская область",
+   "federal_district": "Северо-Западный",
+   "population": 93000,
+   "lat": 59.5644,
+   "lon": 30.1281,
+   "search_radius_km": 8.0
+  },
+  {
+   "name": "Магадан",
+   "region": "Магаданская область",
+   "federal_district": "Дальневосточный",
+   "population": 92000,
+   "lat": 59.5638,
+   "lon": 150.8035,
+   "search_radius_km": 8.0
+  },
+  {
+   "name": "Выборг",
+   "region": "Ленинградская область",
+   "federal_district": "Северо-Западный",
+   "population": 73000,
+   "lat": 60.7095,
+   "lon": 28.7529,
+   "search_radius_km": 7.6
+  },
+  {
+   "name": "Биробиджан",
+   "region": "Еврейская автономная область",
+   "federal_district": "Дальневосточный",
+   "population": 70000,
+   "lat": 48.7947,
+   "lon": 132.9217,
+   "search_radius_km": 7.5
+  },
+  {
+   "name": "Горно-Алтайск",
+   "region": "Республика Алтай",
+   "federal_district": "Сибирский",
+   "population": 64000,
+   "lat": 51.9581,
+   "lon": 85.9603,
+   "search_radius_km": 7.4
+  },
+  {
+   "name": "Салехард",
+   "region": "Ямало-Ненецкий автономный округ",
+   "federal_district": "Уральский",
+   "population": 51000,
+   "lat": 66.5299,
+   "lon": 66.6014,
+   "search_radius_km": 7.1
+  },
+  {
+   "name": "Нарьян-Мар",
+   "region": "Ненецкий автономный округ",
+   "federal_district": "Северо-Западный",
+   "population": 25000,
+   "lat": 67.638,
+   "lon": 53.0069,
+   "search_radius_km": 6.5
+  },
+  {
+   "name": "Анадырь",
+   "region": "Чукотский автономный округ",
+   "federal_district": "Дальневосточный",
+   "population": 12000,
+   "lat": 64.7314,
+   "lon": 177.5015,
+   "search_radius_km": 6.3
+  }
+ ]
+}
