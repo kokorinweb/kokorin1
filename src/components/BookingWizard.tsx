@@ -159,7 +159,10 @@ export function BookingWizard() {
       <div className="grid min-w-0 gap-4">
         {/* Шаг 1 — дата */}
         <Step index={1} title="Дата" done={Boolean(dateKey)}>
-          <div className="rail -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+          <div className="relative">
+            {/* Затухание справа: видно, что дат больше, чем помещается */}
+            <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-12 bg-gradient-to-l from-ink-2 to-transparent" />
+            <div className="rail -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
             {DATES.map((date) => {
               const active = date.key === dateKey;
               return (
@@ -182,6 +185,7 @@ export function BookingWizard() {
                 </button>
               );
             })}
+            </div>
           </div>
         </Step>
 

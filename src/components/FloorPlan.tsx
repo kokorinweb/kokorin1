@@ -14,7 +14,7 @@ import { plural } from "./CartBar";
 /** Зоны в процентах от ширины/высоты плана. Не пересекаются — иначе схема нечитаема. */
 const ZONE_RECTS: Record<ZoneId, { x: number; y: number; w: number; h: number; label: string }> = {
   window: { x: 5, y: 18, w: 17, h: 58, label: "У окна" },
-  bar: { x: 57, y: 9, w: 38, h: 15, label: "Бар" },
+  bar: { x: 57, y: 12, w: 38, h: 14, label: "Бар" },
   main: { x: 25, y: 20, w: 33, h: 56, label: "Основной зал" },
   vip: { x: 68, y: 32, w: 26, h: 44, label: "VIP" },
   terrace: { x: 16, y: 79, w: 70, h: 14, label: "Терраса" },
