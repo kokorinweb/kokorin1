@@ -92,6 +92,8 @@ def build_parser() -> argparse.ArgumentParser:
     info.add_argument("--list-cities", action="store_true", help="показать города справочника")
     info.add_argument("--list-regions", action="store_true", help="показать регионы")
     info.add_argument("--list-categories", action="store_true", help="показать категории")
+    info.add_argument("--check-keys", action="store_true",
+                      help="проверить, какие источники и ключи реально работают, и выйти")
 
     return parser
 
@@ -273,6 +275,13 @@ def main() -> int:
         except BrokenPipeError:  # вывод ушёл в head/less
             os.dup2(os.open(os.devnull, os.O_WRONLY), sys.stdout.fileno())
         return 0
+
+    if args.check_keys:
+        from services.diagnostics import check_keys
+
+        config = config_from_args(args)
+        setup_logging(config.log_level)
+        return check_keys(config)
 
     if not (args.city or args.region or args.country or args.export_only):
         parser.print_help()

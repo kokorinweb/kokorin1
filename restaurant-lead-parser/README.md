@@ -9,6 +9,28 @@
 результат сопровождается числом `website_confidence` (0–100) и текстовым
 обоснованием, которое видно в Excel.
 
+## Быстрый старт — две команды
+
+```bash
+./setup.sh              # venv, зависимости, .env, проверка ключей
+./run.sh "Казань"       # сбор -> output/leads_Казань.xlsx
+```
+
+На Windows — `setup.bat` и `run.bat "Казань"`.
+
+Проверить, какие источники и ключи работают, можно в любой момент:
+
+```bash
+./.venv/bin/python main.py --check-keys
+```
+
+Команда делает по одному дешёвому запросу к каждому сервису и говорит, какой
+максимум `website_confidence` тебе доступен при текущих ключах и хватит ли его
+для порога экспорта. Если она сообщает «основной экспорт будет ПУСТЫМ» — заведи
+`VK_SERVICE_TOKEN` (бесплатно, 10 минут) прежде чем запускать долгий сбор.
+
+Ручной запуск, если нужны нестандартные параметры:
+
 ```bash
 python main.py --city "Казань" --limit 500
 # -> output/restaurants_no_website.xlsx
@@ -160,6 +182,7 @@ python main.py --export-only --min-confidence 90 --top 500 --output top500.xlsx
 | `--db` | путь к SQLite |
 | `--log-level` | `DEBUG` / `INFO` / `WARNING` / `ERROR` |
 | `--no-progress` | без прогресс-бара |
+| `--check-keys` | проверить источники и ключи одним запросом к каждому |
 | `--list-cities` / `--list-regions` / `--list-categories` | справочники |
 
 ---
@@ -355,6 +378,8 @@ logs/parser.log                      лог с ротацией
 
 ```
 restaurant-lead-parser/
+├── setup.sh / setup.bat        разовая установка
+├── run.sh / run.bat            запуск сбора по городу
 ├── main.py                     CLI
 ├── config.py                   конфиг, категории, rate limits
 ├── sources/
