@@ -55,6 +55,12 @@ class CityStats:
 @dataclass
 class RunStats:
     cities: list[CityStats] = field(default_factory=list)
+    #: (источник, город, причина) для источников, упавших целиком
+    source_failures: list[tuple[str, str, str]] = field(default_factory=list)
+
+    def every_source_failed(self) -> bool:
+        """True, если ничего не собрано и виноваты именно источники, а не фильтры."""
+        return bool(self.source_failures) and self.totals()["found"] == 0
 
     def totals(self) -> dict[str, int]:
         keys = (
@@ -189,13 +195,16 @@ class Pipeline:
                 found = await source.fetch_city(city, self.config.categories, limit)
             except SourceUnavailable as exc:
                 log.info("[%s] %s недоступен: %s", city.name, source.name, exc)
+                self.stats.source_failures.append((source.name, city.name, str(exc)))
                 continue
             except ServiceBlocked as exc:
                 log.warning("[%s] %s заблокирован: %s", city.name, source.name, exc)
+                self.stats.source_failures.append((source.name, city.name, str(exc)))
                 self.repo.mark_progress(source.name, city.name, "blocked", region=city.region, error=str(exc))
                 continue
             except Exception as exc:  # noqa: BLE001 — один упавший источник не валит прогон
                 log.error("[%s] %s: ошибка сбора: %s", city.name, source.name, exc)
+                self.stats.source_failures.append((source.name, city.name, str(exc)))
                 self.repo.mark_progress(source.name, city.name, "error", region=city.region, error=str(exc))
                 continue
 

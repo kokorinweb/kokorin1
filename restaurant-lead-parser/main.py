@@ -171,6 +171,34 @@ def select_for_export(repo: Repository, config: Config, top: int) -> tuple[list[
     return everything, leads
 
 
+def report_harvest_failure(stats) -> str:
+    """Сообщение, когда все источники отказали и собирать было нечего."""
+    lines = [
+        "",
+        "!" * 62,
+        "СБОР НЕ СОСТОЯЛСЯ: ни один источник не ответил.",
+        "Пустой файл — это не «в городе нет лидов», это отказ источников.",
+        "!" * 62,
+    ]
+    seen: set[str] = set()
+    for source, city, reason in stats.source_failures:
+        key = f"{source}|{reason[:60]}"
+        if key in seen:
+            continue
+        seen.add(key)
+        lines.append(f"  {source} [{city}]: {reason}")
+    lines += [
+        "",
+        "  Что проверить:",
+        "    1. python main.py --check-keys — покажет, что именно не отвечает",
+        "    2. интернет и корпоративный прокси/файрвол",
+        "    3. зеркало Overpass в .env:",
+        "       OVERPASS_URL=https://overpass.kumi.systems/api/interpreter",
+        "!" * 62,
+    ]
+    return "\n".join(lines)
+
+
 def print_summary(everything: list[Place], leads: list[Place], config: Config) -> None:
     high = sum(1 for p in everything if p.website_status == NO_WEBSITE_HIGH_CONFIDENCE)
     medium = sum(1 for p in everything if p.website_status == NO_WEBSITE_MEDIUM_CONFIDENCE)
@@ -226,9 +254,14 @@ async def run(args: argparse.Namespace) -> int:
         )
         run_id = repo.start_run(config.scope_label, vars(args))
         pipeline = Pipeline(config, repo)
+        harvest_failed = False
         try:
             stats = await pipeline.run(cities)
             repo.finish_run(run_id, stats.totals())
+            harvest_failed = stats.every_source_failed()
+            if harvest_failed:
+                print(report_harvest_failure(stats))
+                exit_code = 3
         except KeyboardInterrupt:
             print("\nПрервано пользователем. Прогресс сохранён — запусти с --resume.")
             exit_code = 130
