@@ -178,3 +178,39 @@ def compute_confidence(data: ConfidenceInput) -> ConfidenceResult:
     if data.notes:
         result.reason += "; " + "; ".join(data.notes)
     return result
+
+
+# ---------------------------------------------------------------------------
+# Какой максимум confidence достижим при текущих ключах
+# ---------------------------------------------------------------------------
+
+
+def achievable_ceiling(config) -> tuple[int, str]:
+    """Потолок website_confidence при данной конфигурации, без обращений к сети.
+
+    Нужен, чтобы не запускать часовой сбор, который заведомо не даст ни одной
+    записи выше порога экспорта.
+    """
+    creds = config.credentials
+    has_search = bool(config.use_search and creds.has_search_provider())
+    has_vk = bool(config.use_socials and creds.vk_token)
+    has_probe = bool(config.use_domain_probe)
+
+    score = BASE_NO_CATALOG_SITE
+    parts = ["карточка без сайта +70"]
+    if has_search:
+        score += BONUS_SEARCH_NO_DOMAIN + BONUS_SEARCH_ONLY_PLATFORMS
+        parts.append("поиск +18")
+    if has_probe:
+        score += BONUS_PROBE_NO_DOMAIN
+        parts.append("перебор доменов +8")
+    if has_vk:
+        score += BONUS_SOCIAL_NO_SITE
+        parts.append("профили VK +7")
+    else:
+        # без токена профиль прочитать нельзя; прибавка есть только у тех,
+        # у кого соцсетей не нашлось вовсе
+        score += BONUS_NO_SOCIAL_AT_ALL
+        parts.append("соцсети не проверяются +3")
+
+    return min(100, score), ", ".join(parts)

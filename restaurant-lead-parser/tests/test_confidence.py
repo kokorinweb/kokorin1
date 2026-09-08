@@ -108,3 +108,54 @@ class TestConfidence:
 ])
 def test_status_thresholds(value, expected):
     assert status_for(value) == expected
+
+
+class TestAchievableCeiling:
+    """Потолок confidence при разных наборах ключей — от него зависит,
+    не окажется ли выгрузка заведомо пустой."""
+
+    def _config(self, **creds):
+        from config import Config
+
+        config = Config()
+        for key, value in creds.items():
+            setattr(config.credentials, key, value)
+        return config
+
+    def test_no_keys_cannot_reach_default_threshold(self):
+        from services.confidence import achievable_ceiling
+
+        ceiling, reason = achievable_ceiling(self._config())
+        assert ceiling < 85
+        assert "перебор доменов" in reason
+
+    def test_vk_token_alone_reaches_high(self):
+        from services.confidence import achievable_ceiling
+
+        ceiling, _ = achievable_ceiling(self._config(vk_token="t"))
+        assert ceiling >= 85
+
+    def test_search_and_vk_reach_100(self):
+        from services.confidence import achievable_ceiling
+
+        ceiling, _ = achievable_ceiling(self._config(vk_token="t", brave_key="k"))
+        assert ceiling == 100
+
+    def test_disabled_checks_lower_the_ceiling(self):
+        from services.confidence import achievable_ceiling
+
+        config = self._config(vk_token="t", brave_key="k")
+        config.use_search = False
+        config.use_socials = False
+        config.use_domain_probe = False
+        ceiling, _ = achievable_ceiling(config)
+        assert ceiling == 73
+
+    def test_ceiling_matches_real_scoring(self):
+        # потолок не должен обещать больше, чем реально считает compute_confidence
+        from services.confidence import achievable_ceiling
+
+        config = self._config(vk_token="t", brave_key="k")
+        ceiling, _ = achievable_ceiling(config)
+        actual = compute_confidence(full_checks()).confidence
+        assert ceiling == actual

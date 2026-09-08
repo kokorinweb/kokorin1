@@ -57,8 +57,9 @@ def build_parser() -> argparse.ArgumentParser:
     filters.add_argument("--per-city-limit", type=int, default=0, help="лимит на один город")
     filters.add_argument("--min-rating", type=float, default=0.0)
     filters.add_argument("--min-reviews", type=int, default=0)
-    filters.add_argument("--min-confidence", type=int, default=85,
-                         help="порог website_confidence для основного экспорта (по умолчанию 85)")
+    filters.add_argument("--min-confidence", type=int, default=None,
+                         help="порог website_confidence для основного экспорта (по умолчанию 85; "
+                              "если ключей не хватает, порог автоматически снижается)")
     filters.add_argument("--min-lead-score", type=int, default=0)
     filters.add_argument("--exclude-chains", action="store_true",
                          help="исключить крупные федеральные сети")
@@ -122,7 +123,7 @@ def config_from_args(args: argparse.Namespace) -> Config:
     config.per_city_limit = args.per_city_limit
     config.min_rating = args.min_rating
     config.min_reviews = args.min_reviews
-    config.min_confidence = args.min_confidence
+    config.min_confidence = 85 if args.min_confidence is None else args.min_confidence
     config.min_lead_score = args.min_lead_score
     config.exclude_chains = args.exclude_chains
     config.sources = [s.strip() for s in args.sources.split(",") if s.strip()]
@@ -139,6 +140,43 @@ def config_from_args(args: argparse.Namespace) -> Config:
     if args.log_level:
         config.log_level = args.log_level
     return config
+
+
+def adjust_confidence_threshold(config: Config, explicit: bool) -> None:
+    """Снижает порог экспорта, если при текущих ключах он недостижим.
+
+    Пустой файл никому не помогает: лучше отдать список послабее, честно
+    подписав, чего в нём не хватает. Явно заданный --min-confidence не трогаем.
+    """
+    from services.confidence import achievable_ceiling
+
+    ceiling, parts = achievable_ceiling(config)
+    if ceiling >= config.min_confidence:
+        return
+
+    if explicit:
+        print(
+            f"\n⚠  Порог --min-confidence {config.min_confidence} недостижим: "
+            f"максимум при текущих ключах — {ceiling} ({parts}).\n"
+            "   Экспорт «без сайта» будет пустым. Убери порог или добавь ключи.\n"
+        )
+        return
+
+    lowered = max(70, ceiling)
+    print(
+        "\n" + "!" * 66 + "\n"
+        f"  Порог confidence снижен: 85 -> {lowered}\n"
+        f"  Причина: при текущих ключах максимум {ceiling} ({parts}).\n"
+        "\n"
+        "  Что это значит на практике: часть компаний в списке всё-таки\n"
+        "  окажется с сайтом — мы просто не смогли это проверить. Перед\n"
+        "  звонком пробей название в поиске.\n"
+        "\n"
+        "  Чтобы вернуть строгий отбор — заведи бесплатный VK_SERVICE_TOKEN\n"
+        "  (dev.vk.com) и ключ Brave Search (brave.com/search/api).\n"
+        + "!" * 66 + "\n"
+    )
+    config.min_confidence = lowered
 
 
 def warn_about_sources(config: Config) -> None:
@@ -255,6 +293,7 @@ async def run(args: argparse.Namespace) -> int:
     exit_code = 0
     if not args.export_only:
         warn_about_sources(config)
+        adjust_confidence_threshold(config, explicit=args.min_confidence is not None)
         log.info(
             "Область: %s | городов: %d | категорий: %d | лимит: %d",
             config.scope_label, len(cities), len(config.categories), config.limit,

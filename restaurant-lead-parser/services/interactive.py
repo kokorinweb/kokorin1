@@ -121,7 +121,18 @@ def run_interactive(base_config: Config) -> int:
     niche = resolve_niche(niche_query)
     limit = _ask_int("\nСколько компаний обойти", 400)
 
+    from services.confidence import achievable_ceiling
+
     config = base_config
+    ceiling, parts = achievable_ceiling(config)
+    if ceiling < config.min_confidence:
+        lowered = max(70, ceiling)
+        print(f"\n  Порог confidence снижен: {config.min_confidence} -> {lowered}")
+        print(f"  При текущих ключах максимум {ceiling} ({parts}).")
+        print("  Часть компаний в списке может оказаться с сайтом — проверяй перед звонком.")
+        print("  Строгий отбор вернёт бесплатный VK_SERVICE_TOKEN + ключ Brave Search.")
+        config.min_confidence = lowered
+
     config.cities = [city_name]
     config.niche_query = niche_query
     config.limit = limit
