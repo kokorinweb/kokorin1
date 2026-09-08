@@ -137,6 +137,9 @@ class Config:
     exclude_chains: bool = False
     chain_branch_threshold: int = 6       # столько+ одноимённых точек = сеть
 
+    # --- ниша бизнеса ---
+    niche_query: str = ""                 # "кофейни", "барбершопы"; пусто = общепит
+
     # --- источники ---
     sources: list[str] = field(default_factory=lambda: ["osm", "yandex", "dgis"])
 
@@ -170,6 +173,13 @@ class Config:
     credentials: Credentials = field(default_factory=Credentials)
 
     # -- производное --------------------------------------------------------
+
+    @property
+    def niche(self):
+        """Разрешённая ниша бизнеса (ленивый импорт: niches тянет normalization)."""
+        from sources.niches import resolve_niche
+
+        return resolve_niche(self.niche_query)
 
     @property
     def scope_label(self) -> str:

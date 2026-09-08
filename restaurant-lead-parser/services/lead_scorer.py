@@ -137,6 +137,9 @@ def score_lead(place: Place, *, exclude_chains: bool = False) -> LeadScore:
         positives.append("полноценное заведение")
     elif place.category in MID_VENUE_CATEGORIES:
         score += 4
+    elif place.category not in ("other_food", "bistro", ""):
+        # ниша вне общепита: формат не оцениваем, но и не штрафуем
+        score += 6
 
     if place.branch_count > 1:
         score += W_MULTI_BRANCH

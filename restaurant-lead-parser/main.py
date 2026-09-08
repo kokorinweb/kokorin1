@@ -92,6 +92,12 @@ def build_parser() -> argparse.ArgumentParser:
     info.add_argument("--list-cities", action="store_true", help="показать города справочника")
     info.add_argument("--list-regions", action="store_true", help="показать регионы")
     info.add_argument("--list-categories", action="store_true", help="показать категории")
+    parser.add_argument("-i", "--interactive", action="store_true",
+                        help="диалоговый режим: спросит город и нишу бизнеса")
+    filters_niche = parser.add_argument_group("ниша бизнеса")
+    filters_niche.add_argument("--niche", default="",
+                               help='что искать: "кофейни", "барбершопы", "стоматологии"; '
+                                    "пусто — весь общепит")
     info.add_argument("--check-keys", action="store_true",
                       help="проверить, какие источники и ключи реально работают, и выйти")
 
@@ -111,6 +117,7 @@ def config_from_args(args: argparse.Namespace) -> Config:
     config.region = args.region
     config.country = args.country
     config.categories = parse_categories(args.categories)
+    config.niche_query = getattr(args, "niche", "") or ""
     config.limit = args.limit
     config.per_city_limit = args.per_city_limit
     config.min_rating = args.min_rating
@@ -316,9 +323,18 @@ def main() -> int:
         setup_logging(config.log_level)
         return check_keys(config)
 
-    if not (args.city or args.region or args.country or args.export_only):
-        parser.print_help()
-        return 2
+    if args.interactive or not (
+        args.city or args.region or args.country or args.export_only
+    ):
+        from services.interactive import run_interactive
+
+        config = config_from_args(args)
+        setup_logging(config.log_level)
+        try:
+            return run_interactive(config)
+        except KeyboardInterrupt:
+            print("\nПрервано.")
+            return 130
 
     try:
         return asyncio.run(run(args))

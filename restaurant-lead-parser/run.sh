@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Сбор лидов по городу.
-#   ./run.sh "Казань"           — 800 заведений, стандартные фильтры
-#   ./run.sh "Москва" 2000      — свой лимит
+#   ./run.sh                          — диалог: спросит город и нишу
+#   ./run.sh "Казань"                 — общепит, 800 компаний
+#   ./run.sh "Казань" "барбершопы"    — своя ниша
+#   ./run.sh "Москва" "кофейни" 2000  — своя ниша и лимит
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -11,22 +13,26 @@ if [ ! -x .venv/bin/python ]; then
 fi
 
 CITY="${1:-}"
-LIMIT="${2:-800}"
+NICHE="${2:-}"
+LIMIT="${3:-800}"
+
+# без аргументов — диалоговый режим
 if [ -z "$CITY" ]; then
-    echo "Укажи город:  ./run.sh \"Казань\"" >&2
-    echo "Список городов:  ./.venv/bin/python main.py --list-cities" >&2
-    exit 2
+    exec ./.venv/bin/python main.py --interactive
 fi
 
-SLUG=$(echo "$CITY" | tr ' ,' '__' | tr -d '"')
+SLUG=$(echo "${CITY}_${NICHE:-obshepit}" | tr ' ,' '__' | tr -d '"')
 OUT="output/leads_${SLUG}.xlsx"
 
-echo "==> Город: $CITY, лимит: $LIMIT"
-echo "==> Результат будет в: $OUT"
+echo "==> Город: $CITY"
+echo "==> Ниша:  ${NICHE:-весь общепит}"
+echo "==> Лимит: $LIMIT"
+echo "==> Результат: $OUT"
 echo ""
 
 ./.venv/bin/python main.py \
     --city "$CITY" \
+    --niche "$NICHE" \
     --limit "$LIMIT" \
     --min-confidence 85 \
     --min-lead-score 50 \

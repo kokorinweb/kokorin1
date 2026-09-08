@@ -129,10 +129,14 @@ class DGisSource(BaseSource):
         if not self.is_configured():
             raise SourceUnavailable(self.unavailable_reason())
 
-        queries: list[str] = []
-        for key in categories:
-            queries.extend(_CATEGORY_QUERIES.get(key, []))
-        queries = list(dict.fromkeys(queries)) or ["кафе", "ресторан"]
+        niche = self.config.niche
+        if not niche.food:
+            queries = list(niche.search_terms) or [niche.title]
+        else:
+            queries = []
+            for key in categories:
+                queries.extend(_CATEGORY_QUERIES.get(key, []))
+            queries = list(dict.fromkeys(queries)) or ["кафе", "ресторан"]
 
         radius = int(min(MAX_RADIUS_M, city.search_radius_km * 1000))
         seen: set[str] = set()
@@ -165,9 +169,9 @@ class DGisSource(BaseSource):
                     if raw is None or raw.source_id in seen:
                         continue
                     seen.add(raw.source_id)
-                    category = map_category(raw.name, raw.raw_category)
-                    if categories and category not in categories:
-                        continue
+                    if niche.food and categories:
+                        if map_category(raw.name, raw.raw_category) not in categories:
+                            continue
                     collected.append(raw)
 
                 if len(items) < PAGE_SIZE:

@@ -114,10 +114,14 @@ class YandexPlacesSource(BaseSource):
         if not self.is_configured():
             raise SourceUnavailable(self.unavailable_reason())
 
-        queries: list[str] = []
-        for key in categories or list(CATEGORIES):
-            queries.extend(_CATEGORY_QUERIES.get(key, []))
-        queries = list(dict.fromkeys(queries)) or ["ресторан", "кафе"]
+        niche = self.config.niche
+        if not niche.food:
+            queries = list(niche.search_terms) or [niche.title]
+        else:
+            queries = []
+            for key in categories or list(CATEGORIES):
+                queries.extend(_CATEGORY_QUERIES.get(key, []))
+            queries = list(dict.fromkeys(queries)) or ["ресторан", "кафе"]
 
         seen: set[str] = set()
         collected: list[RawPlace] = []
@@ -148,9 +152,9 @@ class YandexPlacesSource(BaseSource):
                         continue
                     seen.add(raw.source_id)
                     new_in_batch += 1
-                    category = map_category(raw.name, raw.raw_category)
-                    if categories and category not in categories:
-                        continue
+                    if niche.food and categories:
+                        if map_category(raw.name, raw.raw_category) not in categories:
+                            continue
                     collected.append(raw)
 
                 if new_in_batch == 0 or len(features) < MAX_RESULTS_PER_REQUEST:

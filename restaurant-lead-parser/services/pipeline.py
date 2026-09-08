@@ -75,10 +75,14 @@ class RunStats:
 # ---------------------------------------------------------------------------
 
 
-def raw_to_place(raw: RawPlace) -> Place | None:
+def raw_to_place(raw: RawPlace, niche=None) -> Place | None:
     """Приводит сырую запись к модели. None — если запись отбраковали."""
+    from sources.niches import FOOD_NICHE, niche_category
+
+    niche = niche or FOOD_NICHE
     reason = exclusion_reason(
-        name=raw.name, raw_category=raw.raw_category, tags=raw.tags, address=raw.address
+        name=raw.name, raw_category=raw.raw_category, tags=raw.tags,
+        address=raw.address, food=niche.food,
     )
     if reason:
         log.debug("отброшено «%s»: %s", raw.name, reason)
@@ -117,7 +121,7 @@ def raw_to_place(raw: RawPlace) -> Place | None:
             other.append(url)
 
     phones = normalize_phones(raw.phones)
-    category = map_category(raw.name, raw.raw_category)
+    category = niche_category(niche, raw.raw_category, raw.name)
 
     place = Place(
         name=raw.name.strip(),
@@ -216,8 +220,9 @@ class Pipeline:
 
         places: list[Place] = []
         excluded = 0
+        niche = self.config.niche
         for raw in raw_places:
-            place = raw_to_place(raw)
+            place = raw_to_place(raw, niche)
             if place is None:
                 excluded += 1
                 continue

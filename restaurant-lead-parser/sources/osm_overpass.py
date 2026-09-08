@@ -91,8 +91,13 @@ class OverpassSource(BaseSource):
     # -- построение запроса -------------------------------------------------
 
     @staticmethod
-    def _build_query(*, area_id: int | None, bbox: tuple[float, float, float, float] | None) -> str:
-        amenity_re = "|".join(_AMENITIES)
+    def _build_query(
+        *,
+        area_id: int | None,
+        bbox: tuple[float, float, float, float] | None,
+        filters: tuple[str, ...] = (),
+    ) -> str:
+        """Собирает Overpass QL из селекторов ниши."""
         if area_id:
             scope_decl = f"area({area_id})->.a;"
             scope = "(area.a)"
@@ -100,13 +105,18 @@ class OverpassSource(BaseSource):
             assert bbox is not None
             scope_decl = ""
             scope = "({:.5f},{:.5f},{:.5f},{:.5f})".format(*bbox)
+
+        if not filters:
+            amenity_re = "|".join(_AMENITIES)
+            filters = (
+                f'["amenity"~"^({amenity_re})$"]',
+                '["cuisine"]["amenity"]',
+            )
+        body = "".join(f'nwr{selector}["name"]{scope};' for selector in filters)
         return (
             "[out:json][timeout:180];"
             f"{scope_decl}"
-            "("
-            f'nwr["amenity"~"^({amenity_re})$"]["name"]{scope};'
-            f'nwr["cuisine"]["name"]["amenity"]{scope};'
-            ");"
+            f"({body});"
             "out center tags 20000;"
         )
 
@@ -137,7 +147,7 @@ class OverpassSource(BaseSource):
             parts.append(tags["address"])
         return ", ".join(parts)
 
-    def _to_raw(self, element: dict[str, Any], city: City) -> RawPlace | None:
+    def _to_raw(self, element: dict[str, Any], city: City, food: bool = True) -> RawPlace | None:
         tags = {k: str(v) for k, v in (element.get("tags") or {}).items()}
         name = (tags.get("name:ru") or tags.get("name") or tags.get("official_name") or "").strip()
         if not name:
@@ -145,11 +155,12 @@ class OverpassSource(BaseSource):
 
         amenity = tags.get("amenity", "")
         cuisine = tags.get("cuisine", "")
-        if amenity == "fast_food" and not any(c in cuisine for c in _FASTFOOD_OK_CUISINES):
-            # обычный фастфуд/шаурма без кухни — не наш лид
-            return None
-        if amenity not in _AMENITIES and not cuisine:
-            return None
+        if food:
+            if amenity == "fast_food" and not any(c in cuisine for c in _FASTFOOD_OK_CUISINES):
+                # обычный фастфуд/шаурма без кухни — не наш лид
+                return None
+            if amenity not in _AMENITIES and not cuisine:
+                return None
 
         lat, lon = self._element_coords(element)
         website = ""
@@ -192,7 +203,11 @@ class OverpassSource(BaseSource):
             source=self.name,
             source_id=f"{element_type}/{element_id}",
             name=name,
-            raw_category=" ".join(filter(None, (amenity, cuisine, tags.get("brand", "")))),
+            raw_category=" ".join(filter(None, (
+                amenity, cuisine, tags.get("shop", ""), tags.get("office", ""),
+                tags.get("craft", ""), tags.get("healthcare", ""), tags.get("leisure", ""),
+                tags.get("tourism", ""), tags.get("brand", ""),
+            ))),
             city=tags.get("addr:city") or city.name,
             region=city.region,
             address=self._address(tags, city),
@@ -217,9 +232,10 @@ class OverpassSource(BaseSource):
     # -- основной метод -----------------------------------------------------
 
     async def fetch_city(self, city: City, categories: list[str], limit: int) -> list[RawPlace]:
+        niche = self.config.niche
         area_id = await self._area_id(city)
         bbox = None if area_id else bbox_around(city.lat, city.lon, city.search_radius_km)
-        query = self._build_query(area_id=area_id, bbox=bbox)
+        query = self._build_query(area_id=area_id, bbox=bbox, filters=niche.osm_filters)
 
         response = await self.http.post(
             self.endpoint,
@@ -238,12 +254,12 @@ class OverpassSource(BaseSource):
 
         places: list[RawPlace] = []
         for element in elements:
-            raw = self._to_raw(element, city)
+            raw = self._to_raw(element, city, food=niche.food)
             if raw is None:
                 continue
-            category = map_category(raw.name, raw.raw_category)
-            if categories and category not in categories:
-                continue
+            if niche.food and categories:
+                if map_category(raw.name, raw.raw_category) not in categories:
+                    continue
             places.append(raw)
             if limit and len(places) >= limit:
                 break
