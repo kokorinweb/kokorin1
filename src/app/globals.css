@@ -66,3 +66,59 @@ body {
     scroll-behavior: auto;
   }
 }
+
+/* ───────────────────────── Движение: общие токены ───────────────────────── */
+
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/*
+ * Появление по скроллу. Элемент помечается data-reveal="<вариант>", класс
+ * .is-revealed навешивает наблюдатель из <ScrollReveal />. Задержку для каскада
+ * задаём инлайном через --reveal-delay.
+ */
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, var(--reveal-y, 28px), 0) scale(var(--reveal-scale, 1));
+  filter: blur(var(--reveal-blur, 0px));
+  transition:
+    opacity 0.75s var(--ease-out) var(--reveal-delay, 0s),
+    transform 0.95s var(--ease-out) var(--reveal-delay, 0s),
+    filter 0.75s var(--ease-out) var(--reveal-delay, 0s);
+}
+
+[data-reveal="fade"] {
+  --reveal-y: 0px;
+}
+[data-reveal="rise"] {
+  --reveal-y: 68px;
+  --reveal-blur: 7px;
+}
+[data-reveal="scale"] {
+  --reveal-y: 14px;
+  --reveal-scale: 0.93;
+}
+/* Для строк текста: родителю нужен overflow: hidden, тогда строка выезжает из-под маски. */
+[data-reveal="line"] {
+  --reveal-y: 110%;
+}
+
+[data-reveal].is-revealed,
+[data-reveal-mask].is-revealed [data-reveal] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-reveal],
+  [data-reveal-mask] [data-reveal] {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+}

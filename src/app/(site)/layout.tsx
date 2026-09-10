@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { CartProvider } from "@/components/CartContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";

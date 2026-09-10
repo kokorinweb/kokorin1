@@ -1,0 +1,678 @@
+/* Плавный скролл из стилей ресторана ломает скраб — тут он строго отключён. */
+.hx-root {
+  color-scheme: dark;
+  scroll-behavior: auto;
+  background: #000000;
+}
+
+/*
+ * Тёмная сцена /helix. Живёт отдельно от стилей ресторана: у неё свой root layout,
+ * своя палитра и свой набор правил движения.
+ */
+
+.void {
+  --void: #000000;
+  --void-soft: #0a0908;
+  --bone: #f4efe9;
+  --ash: #8a8078;
+  --ember: #ff6a12;
+  --ember-hot: #ffa244;
+
+  background: var(--void);
+  color: var(--bone);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─────────────────────────── Прелоадер ─────────────────────────── */
+
+.helix-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.25rem;
+  background: var(--void);
+  transition: opacity 0.7s var(--ease-out), visibility 0.7s;
+}
+
+.helix-loader[data-done="true"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.helix-loader__mark {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.55em;
+  text-indent: 0.55em;
+  color: var(--ash);
+}
+
+.helix-loader__count {
+  font-size: clamp(3rem, 12vw, 6rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.helix-loader__track {
+  width: min(320px, 60vw);
+  height: 1px;
+  background: rgba(244, 239, 233, 0.15);
+}
+
+.helix-loader__fill {
+  height: 100%;
+  background: var(--ember);
+  transform-origin: left center;
+  transition: transform 0.25s linear;
+}
+
+.helix-loader__note {
+  font-size: 0.7rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(138, 128, 120, 0.7);
+}
+
+/* ─────────────────────── Сцена скролл-скраба ─────────────────────── */
+
+.helix-runway {
+  position: relative;
+}
+
+.helix-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+  background: var(--void);
+}
+
+.helix-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.helix-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.72) 100%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent 22%, transparent 72%, rgba(0, 0, 0, 0.75));
+}
+
+/* Зерно прячет мыло апскейла: исходник всего 568×360, без него видно кашу. */
+.helix-grain {
+  position: absolute;
+  inset: -100%;
+  pointer-events: none;
+  opacity: 0.055;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain-shift 0.9s steps(5) infinite;
+}
+
+@keyframes grain-shift {
+  0% { transform: translate3d(0, 0, 0); }
+  20% { transform: translate3d(-3%, 2%, 0); }
+  40% { transform: translate3d(2%, -3%, 0); }
+  60% { transform: translate3d(-2%, -2%, 0); }
+  80% { transform: translate3d(3%, 1%, 0); }
+  100% { transform: translate3d(0, 0, 0); }
+}
+
+/* ─────────────────────────── Надписи ─────────────────────────── */
+
+.helix-captions {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  pointer-events: none;
+}
+
+.helix-caption {
+  grid-area: 1 / 1;
+  align-self: center;
+  width: 100%;
+  padding-inline: clamp(1.25rem, 5vw, 5rem);
+  visibility: hidden;
+  opacity: 0;
+  will-change: opacity, transform, filter;
+  text-shadow: 0 2px 40px rgba(0, 0, 0, 0.95), 0 0 14px rgba(0, 0, 0, 0.8);
+  /* Растушёванная подложка вместо плашки: тень под буквами есть, границы не видно. */
+  background: radial-gradient(
+    ellipse 78% 62% at var(--scrim-x, 50%) 50%,
+    rgba(0, 0, 0, 0.62),
+    transparent 72%
+  );
+}
+
+.helix-caption[data-place="left"] {
+  --scrim-x: 32%;
+}
+
+.helix-caption[data-place="right"] {
+  --scrim-x: 68%;
+}
+
+.helix-caption__kicker {
+  font-size: clamp(0.62rem, 1.1vw, 0.75rem);
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.helix-caption__title {
+  margin-top: 1rem;
+  font-size: clamp(2.35rem, 7.2vw, 5.75rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.035em;
+  text-wrap: balance;
+}
+
+.helix-caption__body {
+  margin-top: 1.35rem;
+  max-width: 44ch;
+  font-size: clamp(0.95rem, 1.35vw, 1.2rem);
+  line-height: 1.6;
+  color: rgba(244, 239, 233, 0.72);
+}
+
+.helix-caption[data-place="center"] {
+  text-align: center;
+}
+.helix-caption[data-place="center"] .helix-caption__body {
+  margin-inline: auto;
+}
+
+.helix-caption[data-place="left"] .helix-caption__title,
+.helix-caption[data-place="left"] .helix-caption__body,
+.helix-caption[data-place="left"] .helix-caption__kicker {
+  margin-right: auto;
+}
+.helix-caption[data-place="left"] .helix-caption__title {
+  max-width: 14ch;
+}
+
+.helix-caption[data-place="right"] {
+  text-align: right;
+}
+.helix-caption[data-place="right"] .helix-caption__title,
+.helix-caption[data-place="right"] .helix-caption__body {
+  margin-left: auto;
+}
+.helix-caption[data-place="right"] .helix-caption__title {
+  max-width: 14ch;
+}
+
+/* На узком экране колонок нет — всё уезжает вниз и выравнивается по левому краю. */
+@media (max-width: 720px) {
+  .helix-caption {
+    align-self: end;
+    padding-bottom: clamp(4.5rem, 14vh, 8rem);
+    text-align: left;
+  }
+  .helix-caption[data-place="center"],
+  .helix-caption[data-place="right"] {
+    text-align: left;
+  }
+  .helix-caption__title {
+    max-width: none !important;
+  }
+  .helix-caption__body {
+    margin-inline: 0 !important;
+  }
+}
+
+/* ───────────────────────── Служебный слой сцены ───────────────────────── */
+
+.helix-hud {
+  position: absolute;
+  top: clamp(1.25rem, 4vh, 2.5rem);
+  right: clamp(1.25rem, 5vw, 3rem);
+  display: flex;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  color: rgba(244, 239, 233, 0.5);
+  font-variant-numeric: tabular-nums;
+}
+
+.helix-hud__slash {
+  color: var(--ember);
+}
+
+.helix-hint {
+  position: absolute;
+  bottom: clamp(1.5rem, 5vh, 2.75rem);
+  left: 50%;
+  translate: -50% 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.62rem;
+  letter-spacing: 0.35em;
+  text-indent: 0.35em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 233, 0.55);
+}
+
+.helix-hint i {
+  display: block;
+  width: 1px;
+  height: 42px;
+  background: linear-gradient(to bottom, var(--ember), transparent);
+  animation: hint-drop 1.9s var(--ease-in-out) infinite;
+  transform-origin: top center;
+}
+
+@keyframes hint-drop {
+  0% { transform: scaleY(0); opacity: 0; }
+  35% { transform: scaleY(1); opacity: 1; }
+  75% { transform: scaleY(1) translateY(0); opacity: 1; }
+  100% { transform: scaleY(1) translateY(18px); opacity: 0; }
+}
+
+.helix-progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: rgba(244, 239, 233, 0.08);
+}
+
+.helix-progress__bar {
+  height: 100%;
+  background: linear-gradient(to right, var(--ember), var(--ember-hot));
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .helix-grain,
+  .helix-hint i {
+    animation: none;
+  }
+}
+
+/* ═════════════════════════ Страница после сцены ═════════════════════════ */
+
+.hx-shell {
+  position: relative;
+  z-index: 1;
+  background: var(--void);
+}
+
+.hx-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(1rem, 3vh, 1.6rem) clamp(1.25rem, 5vw, 3rem);
+  pointer-events: none;
+  /* difference поверх раскалённой спирали сам подбирает контраст — фон-то живой. */
+  mix-blend-mode: difference;
+}
+
+.hx-nav__mark {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.5em;
+  text-indent: 0.5em;
+}
+
+.hx-nav__meta {
+  font-size: 0.66rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: rgba(244, 239, 233, 0.75);
+}
+
+.hx-section {
+  padding-block: clamp(6rem, 16vh, 12rem);
+  padding-inline: clamp(1.25rem, 5vw, 5rem);
+}
+
+.hx-inner {
+  max-width: 78rem;
+  margin-inline: auto;
+}
+
+.hx-eyebrow {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.42em;
+  text-indent: 0.42em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.hx-h2 {
+  margin-top: 1.4rem;
+  font-size: clamp(2rem, 5.2vw, 3.9rem);
+  font-weight: 800;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.hx-lead {
+  margin-top: 1.5rem;
+  max-width: 52ch;
+  font-size: clamp(1rem, 1.4vw, 1.22rem);
+  line-height: 1.65;
+  color: rgba(244, 239, 233, 0.68);
+}
+
+/* ─── Манифест: строки выезжают из-под маски ─── */
+
+.hx-manifest__line {
+  overflow: hidden;
+  display: block;
+}
+
+.hx-manifest__line span {
+  display: block;
+  font-size: clamp(1.9rem, 6.4vw, 5rem);
+  font-weight: 300;
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+}
+
+.hx-manifest__line em {
+  font-style: normal;
+  font-weight: 800;
+  color: var(--ember);
+}
+
+/* ─── Цифры ─── */
+
+.hx-stats {
+  display: grid;
+  gap: clamp(2rem, 5vw, 3.5rem);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid rgba(244, 239, 233, 0.14);
+  padding-top: clamp(2.5rem, 6vh, 4rem);
+  margin-top: clamp(3rem, 8vh, 5rem);
+}
+
+@media (min-width: 900px) {
+  .hx-stats {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.hx-stat__value {
+  font-size: clamp(2.1rem, 4.6vw, 3.4rem);
+  font-weight: 200;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hx-stat__unit {
+  color: var(--ember);
+  font-weight: 600;
+}
+
+.hx-stat__label {
+  margin-top: 0.85rem;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: rgba(244, 239, 233, 0.55);
+}
+
+/* ─── Шаги с прочерчивающейся линией ─── */
+
+.hx-steps {
+  position: relative;
+  margin-top: clamp(3rem, 8vh, 5rem);
+  display: grid;
+  gap: clamp(2.5rem, 6vh, 4rem);
+}
+
+.hx-step {
+  position: relative;
+  padding-left: clamp(2.75rem, 6vw, 4.5rem);
+}
+
+.hx-step__spine {
+  position: absolute;
+  left: 0;
+  top: 0.35rem;
+  bottom: -1rem;
+  width: 1px;
+  background: rgba(244, 239, 233, 0.16);
+  overflow: hidden;
+}
+
+.hx-step__spine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, var(--ember), transparent);
+  transform: scaleY(0);
+  transform-origin: top center;
+}
+
+.hx-step:last-child .hx-step__spine {
+  bottom: 1.5rem;
+}
+
+.hx-step__index {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--void);
+  border: 1px solid var(--ember);
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ember);
+}
+
+.hx-step__title {
+  font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hx-step__body {
+  margin-top: 0.75rem;
+  max-width: 50ch;
+  line-height: 1.65;
+  color: rgba(244, 239, 233, 0.6);
+}
+
+/* ─── Бегущая строка ─── */
+
+.hx-marquee {
+  overflow: hidden;
+  border-block: 1px solid rgba(244, 239, 233, 0.12);
+  padding-block: clamp(1rem, 2.5vh, 1.6rem);
+  user-select: none;
+}
+
+.hx-marquee + .hx-marquee {
+  border-top: 0;
+}
+
+.hx-marquee__row {
+  display: flex;
+  width: max-content;
+  gap: 3rem;
+  padding-right: 3rem;
+  animation: marquee 34s linear infinite;
+}
+
+.hx-marquee__row[data-dir="reverse"] {
+  animation-direction: reverse;
+}
+
+.hx-marquee__row span {
+  font-size: clamp(1.6rem, 4.5vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: rgba(244, 239, 233, 0.12);
+  white-space: nowrap;
+}
+
+.hx-marquee__row span:nth-child(3n) {
+  color: rgba(255, 106, 18, 0.5);
+}
+
+@keyframes marquee {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+/* ─── Горизонтальный дрейф карточек ─── */
+
+.hx-rail {
+  overflow: hidden;
+  padding-block: clamp(4rem, 10vh, 7rem);
+}
+
+.hx-rail__track {
+  display: flex;
+  gap: clamp(1rem, 2vw, 1.75rem);
+  width: max-content;
+  padding-inline: clamp(1.25rem, 5vw, 5rem);
+}
+
+.hx-card {
+  width: clamp(15rem, 26vw, 21rem);
+  padding: clamp(1.5rem, 2.5vw, 2.25rem);
+  border: 1px solid rgba(244, 239, 233, 0.14);
+  border-radius: 1.25rem;
+  background: linear-gradient(160deg, rgba(255, 106, 18, 0.07), rgba(10, 9, 8, 0.4));
+  transition: border-color 0.4s var(--ease-out), transform 0.4s var(--ease-out);
+}
+
+.hx-card:hover {
+  border-color: rgba(255, 106, 18, 0.55);
+  transform: translateY(-6px);
+}
+
+.hx-card__tag {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ember);
+}
+
+.hx-card__title {
+  margin-top: 1.1rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hx-card__body {
+  margin-top: 0.7rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: rgba(244, 239, 233, 0.58);
+}
+
+/* Прокрутка страницы двигает ленту вбок. Где scroll-timeline нет — просто стоит на месте. */
+@supports (animation-timeline: view()) {
+  .hx-rail__track {
+    animation: rail-drift linear both;
+    animation-timeline: view();
+    animation-range: entry 65% exit 35%;
+  }
+
+  .hx-step__spine::after {
+    animation: spine-draw linear both;
+    animation-timeline: view();
+    animation-range: entry 55% cover 45%;
+  }
+}
+
+/* Симметрично относительно центра: когда лента в середине экрана, карточки стоят ровно
+   по сетке страницы, а уезжают только на входе и на выходе. */
+@keyframes rail-drift {
+  from {
+    transform: translate3d(9%, 0, 0);
+  }
+  to {
+    transform: translate3d(-9%, 0, 0);
+  }
+}
+
+@keyframes spine-draw {
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* ─── Финал ─── */
+
+.hx-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-top: 2.5rem;
+  padding: 1rem 2rem;
+  border-radius: 999px;
+  background: var(--ember);
+  color: #12100e;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  transition: transform 0.35s var(--ease-back), box-shadow 0.35s var(--ease-out);
+}
+
+.hx-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(255, 106, 18, 0.32);
+}
+
+.hx-footer {
+  border-top: 1px solid rgba(244, 239, 233, 0.12);
+  padding: clamp(2.5rem, 6vh, 4rem) clamp(1.25rem, 5vw, 5rem);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: rgba(244, 239, 233, 0.45);
+}
+
+.hx-footer a {
+  color: rgba(244, 239, 233, 0.75);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hx-marquee__row {
+    animation: none;
+  }
+}
