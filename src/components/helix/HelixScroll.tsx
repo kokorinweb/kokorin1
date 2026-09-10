@@ -8,15 +8,32 @@ import { HELIX, HELIX_CAPTIONS } from "@/lib/helix";
  *
  * Почему канвас, а не <video> с currentTime: перемотка видео на мобильном Safari
  * дёргается и отстаёт от пальца, а отрисовка заранее загруженных кадров идёт ровно.
- * Плата за это — 1.7 МБ картинок, которые грузятся один раз под прелоадером.
+ *
+ * Плавность держится на трёх вещах сразу: кадров вдвое больше исходных (интерполяция
+ * до 48 к/с), положение догоняет скролл по экспоненте, а между двумя соседними кадрами
+ * идёт подмешивание — поэтому картинка непрерывна, а не щёлкает по кадрам.
  */
 
 /** Доля, на которую кадр догоняет реальную позицию скролла за тик. Ниже — плавнее и вязче. */
-const SMOOTHING = 0.15;
+const SMOOTHING = 0.12;
 /** Сколько картинок тянем одновременно: больше — быстрее, но браузер начинает захлёбываться. */
 const CONCURRENCY = 12;
 
 const clamp01 = (value: number) => (value < 0 ? 0 : value > 1 ? 1 : value);
+
+/**
+ * Сколько кадров пропускать при загрузке.
+ *
+ * Распакованный кадр 1136×720 занимает ~3 МБ, и вся секвенция целиком — это под гигабайт
+ * битмапов. Десктоп такое переживает, телефон — не обязательно, поэтому там берём каждый
+ * второй: подмешивание соседних кадров скрывает разницу почти полностью.
+ */
+function pickStride(): number {
+  const memory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+  if (window.innerWidth < 900) return 2;
+  if (typeof memory === "number" && memory <= 4) return 2;
+  return 1;
+}
 
 export function HelixScroll() {
   const runwayRef = useRef<HTMLDivElement>(null);
@@ -28,22 +45,27 @@ export function HelixScroll() {
   const chapterRef = useRef<HTMLSpanElement>(null);
   const framesRef = useRef<(HTMLImageElement | null)[]>([]);
 
+  const [total, setTotal] = useState(HELIX.frameCount);
   const [loaded, setLoaded] = useState(0);
   const [ready, setReady] = useState(false);
 
   // Прелоад кадров с ограничением параллелизма.
   useEffect(() => {
     let cancelled = false;
-    const frames: (HTMLImageElement | null)[] = new Array(HELIX.frameCount).fill(null);
+
+    const stride = pickStride();
+    const count = Math.ceil(HELIX.frameCount / stride);
+    const frames: (HTMLImageElement | null)[] = new Array(count).fill(null);
     framesRef.current = frames;
+    setTotal(count);
 
     let next = 0;
     let done = 0;
 
     function pump() {
       if (cancelled) return;
-      const index = next++;
-      if (index >= HELIX.frameCount) return;
+      const slot = next++;
+      if (slot >= count) return;
 
       const image = new Image();
       image.decoding = "async";
@@ -52,17 +74,23 @@ export function HelixScroll() {
         done += 1;
         if (cancelled) return;
         setLoaded(done);
-        if (done === HELIX.frameCount) setReady(true);
+        if (done === count) setReady(true);
         pump();
       };
 
       image.onload = () => {
-        frames[index] = image;
-        settle();
+        // Декодируем сразу, а не при первой отрисовке: иначе браузер распаковывает кадр
+        // прямо посреди прокрутки и роняет один кадр анимации из десяти.
+        const store = () => {
+          frames[slot] = image;
+          settle();
+        };
+        if (typeof image.decode === "function") image.decode().then(store, store);
+        else store();
       };
       // Битый кадр не должен вешать всю сцену — просто останется дыркой, её закроет сосед.
       image.onerror = settle;
-      image.src = HELIX.src(index);
+      image.src = HELIX.src(slot * stride);
     }
 
     for (let i = 0; i < CONCURRENCY; i += 1) pump();
@@ -95,6 +123,7 @@ export function HelixScroll() {
     let width = 0;
     let height = 0;
     let smoothed = -1;
+    let painted = -1;
     let frame = 0;
     let running = false;
 
@@ -113,30 +142,27 @@ export function HelixScroll() {
     };
 
     const resize = () => {
-      const ratio = Math.min(window.devicePixelRatio || 1, 2);
+      // Исходный кадр всего 1136 пикселей в ширину: заводить под него ретиновый буфер
+      // вдвое шире экрана — чистая трата заливки, резкости это не добавит ни капли.
+      const ratio = Math.min(window.devicePixelRatio || 1, 1.5);
       width = canvas.clientWidth;
       height = canvas.clientHeight;
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       smoothed = -1;
+      painted = -1;
     };
 
-    const drawFrame = (progress: number) => {
-      const index = Math.round(clamp01(progress) * (HELIX.frameCount - 1));
-      const image = nearestFrame(index);
-
-      context.fillStyle = "#000000";
-      context.fillRect(0, 0, width, height);
-      if (!image) return;
-
-      // Вписываем по ширине, но не даём кадру раздуться сильнее, чем нужно для заполнения:
-      // на широких экранах это cover, на вертикальном телефоне — полоса на чёрном, что
-      // незаметно, потому что фон ролика тоже чёрный.
+    // Вписываем по ширине, но не даём кадру раздуться сильнее, чем нужно для заполнения:
+    // на широких экранах это cover, на вертикальном телефоне — полоса на чёрном, что
+    // незаметно, потому что фон ролика тоже чёрный.
+    const paint = (image: HTMLImageElement, alpha: number) => {
       const cover = Math.max(width / image.width, height / image.height);
       const scale = Math.min(cover, (width / image.width) * 1.35);
       const drawWidth = image.width * scale;
       const drawHeight = image.height * scale;
+      context.globalAlpha = alpha;
       context.drawImage(
         image,
         (width - drawWidth) / 2,
@@ -144,6 +170,30 @@ export function HelixScroll() {
         drawWidth,
         drawHeight,
       );
+    };
+
+    const drawFrame = (progress: number) => {
+      const frames = framesRef.current;
+      const exact = clamp01(progress) * (frames.length - 1);
+      const index = Math.floor(exact);
+      const blend = exact - index;
+
+      const current = nearestFrame(index);
+      context.globalAlpha = 1;
+      context.fillStyle = "#000000";
+      context.fillRect(0, 0, width, height);
+      if (!current) return;
+
+      paint(current, 1);
+
+      // Подмешиваем следующий кадр пропорционально дробной части: движение становится
+      // непрерывным вместо щелчков между кадрами. Оба кадра на чёрном, так что это
+      // обычный кросс-фейд, а выглядит как мягкий моушен-блюр.
+      if (blend > 0.05 && index + 1 < frames.length) {
+        const upcoming = nearestFrame(index + 1);
+        if (upcoming && upcoming !== current) paint(upcoming, blend);
+      }
+      context.globalAlpha = 1;
     };
 
     const paintOverlays = (progress: number) => {
@@ -196,11 +246,17 @@ export function HelixScroll() {
       } else {
         smoothed += (target - smoothed) * SMOOTHING;
         // Добиваем хвост вручную: иначе экспонента вечно ползёт и жжёт кадры впустую.
-        if (Math.abs(target - smoothed) < 0.0003) smoothed = target;
+        if (Math.abs(target - smoothed) < 0.0002) smoothed = target;
       }
 
-      drawFrame(smoothed);
-      paintOverlays(smoothed);
+      // Позиция не изменилась — перерисовывать нечего. Без этой проверки сцена жжёт
+      // кадры даже когда страница просто стоит на месте.
+      if (smoothed !== painted) {
+        drawFrame(smoothed);
+        paintOverlays(smoothed);
+        painted = smoothed;
+      }
+
       frame = requestAnimationFrame(tick);
     };
 
@@ -236,7 +292,7 @@ export function HelixScroll() {
     };
   }, [ready]);
 
-  const percent = Math.round((loaded / HELIX.frameCount) * 100);
+  const percent = Math.round((loaded / total) * 100);
 
   return (
     <>
@@ -246,7 +302,7 @@ export function HelixScroll() {
         <div className="helix-loader__track">
           <div className="helix-loader__fill" style={{ transform: `scaleX(${percent / 100})` }} />
         </div>
-        <p className="helix-loader__note">Загружаем последовательность · {HELIX.frameCount} кадров</p>
+        <p className="helix-loader__note">Загружаем последовательность · {total} кадров</p>
       </div>
 
       <section

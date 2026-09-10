@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope } from "next/font/google";
+import { JetBrains_Mono, Manrope } from "next/font/google";
 import "../globals.css";
 import "./helix.css";
 import { ScrollReveal } from "@/components/ScrollReveal";
@@ -7,6 +7,14 @@ import { ScrollReveal } from "@/components/ScrollReveal";
 const sans = Manrope({
   subsets: ["latin", "cyrillic"],
   variable: "--font-body",
+  display: "swap",
+});
+
+/** Моноширинный только для служебных подписей: счётчика кадров, ярлыков, подсказок. */
+const mono = JetBrains_Mono({
+  subsets: ["latin", "cyrillic"],
+  weight: ["400", "600"],
+  variable: "--font-jet",
   display: "swap",
 });
 
@@ -26,7 +34,7 @@ export const viewport: Viewport = {
  */
 export default function ExperienceLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${sans.variable} hx-root`}>
+    <html lang="ru" className={`${sans.variable} ${mono.variable} hx-root`}>
       <body className="void">
         {children}
         <ScrollReveal />

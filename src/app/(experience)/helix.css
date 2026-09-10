@@ -17,6 +17,7 @@
   --ash: #8a8078;
   --ember: #ff6a12;
   --ember-hot: #ffa244;
+  --font-mono: var(--font-jet), ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   background: var(--void);
   color: var(--bone);
@@ -46,6 +47,7 @@
 }
 
 .helix-loader__mark {
+  font-family: var(--font-mono);
   font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.55em;
@@ -74,7 +76,8 @@
 }
 
 .helix-loader__note {
-  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
   letter-spacing: 0.18em;
   text-transform: uppercase;
   color: rgba(138, 128, 120, 0.7);
@@ -107,27 +110,17 @@
   inset: 0;
   pointer-events: none;
   background:
-    radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.72) 100%),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.55), transparent 22%, transparent 72%, rgba(0, 0, 0, 0.75));
+    radial-gradient(ellipse at center, transparent 52%, rgba(0, 0, 0, 0.55) 100%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.45), transparent 20%, transparent 74%, rgba(0, 0, 0, 0.6));
 }
 
-/* Зерно прячет мыло апскейла: исходник всего 568×360, без него видно кашу. */
+/* Тонкое статичное зерно: маскирует остатки апскейла, но не мельтешит. */
 .helix-grain {
   position: absolute;
-  inset: -100%;
+  inset: 0;
   pointer-events: none;
-  opacity: 0.055;
+  opacity: 0.038;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-  animation: grain-shift 0.9s steps(5) infinite;
-}
-
-@keyframes grain-shift {
-  0% { transform: translate3d(0, 0, 0); }
-  20% { transform: translate3d(-3%, 2%, 0); }
-  40% { transform: translate3d(2%, -3%, 0); }
-  60% { transform: translate3d(-2%, -2%, 0); }
-  80% { transform: translate3d(3%, 1%, 0); }
-  100% { transform: translate3d(0, 0, 0); }
 }
 
 /* ─────────────────────────── Надписи ─────────────────────────── */
@@ -165,12 +158,24 @@
 }
 
 .helix-caption__kicker {
-  font-size: clamp(0.62rem, 1.1vw, 0.75rem);
-  font-weight: 700;
-  letter-spacing: 0.42em;
-  text-indent: 0.42em;
+  font-family: var(--font-mono);
+  font-size: clamp(0.62rem, 1.1vw, 0.74rem);
+  font-weight: 600;
+  letter-spacing: 0.38em;
+  text-indent: 0.38em;
   text-transform: uppercase;
-  color: var(--ember);
+  color: var(--bone);
+}
+
+.helix-caption__kicker::before {
+  content: "";
+  display: inline-block;
+  width: 0.42em;
+  height: 0.42em;
+  margin-right: 0.9em;
+  border-radius: 999px;
+  background: var(--ember);
+  vertical-align: middle;
 }
 
 .helix-caption__title {
@@ -187,7 +192,7 @@
   max-width: 44ch;
   font-size: clamp(0.95rem, 1.35vw, 1.2rem);
   line-height: 1.6;
-  color: rgba(244, 239, 233, 0.72);
+  color: rgba(244, 239, 233, 0.78);
 }
 
 .helix-caption[data-place="center"] {
@@ -239,6 +244,7 @@
 /* ───────────────────────── Служебный слой сцены ───────────────────────── */
 
 .helix-hud {
+  font-family: var(--font-mono);
   position: absolute;
   top: clamp(1.25rem, 4vh, 2.5rem);
   right: clamp(1.25rem, 5vw, 3rem);
@@ -256,6 +262,7 @@
 }
 
 .helix-hint {
+  font-family: var(--font-mono);
   position: absolute;
   bottom: clamp(1.5rem, 5vh, 2.75rem);
   left: 50%;
@@ -334,6 +341,7 @@
 }
 
 .hx-nav__mark {
+  font-family: var(--font-mono);
   font-size: 0.78rem;
   font-weight: 800;
   letter-spacing: 0.5em;
@@ -341,6 +349,7 @@
 }
 
 .hx-nav__meta {
+  font-family: var(--font-mono);
   font-size: 0.66rem;
   letter-spacing: 0.24em;
   text-transform: uppercase;
@@ -358,7 +367,8 @@
 }
 
 .hx-eyebrow {
-  font-size: 0.68rem;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
   font-weight: 700;
   letter-spacing: 0.42em;
   text-indent: 0.42em;
@@ -479,6 +489,7 @@
 }
 
 .hx-step__index {
+  font-family: var(--font-mono);
   position: absolute;
   left: 0;
   top: 0;
@@ -580,7 +591,8 @@
 }
 
 .hx-card__tag {
-  font-size: 0.64rem;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.28em;
   text-transform: uppercase;
