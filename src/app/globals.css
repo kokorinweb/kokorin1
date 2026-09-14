@@ -66,3 +66,43 @@ body {
     scroll-behavior: auto;
   }
 }
+
+/* Реальную высоту шапки пишет сам <Header> — герой уезжает под неё ровно на эту величину. */
+:root {
+  --header-h: 4rem;
+}
+
+/* Плёночное зерно поверх героя: SVG-шум в data-URI, ноль запросов в сеть. */
+.noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.28;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/*
+ * Разгон для скролл-сцены героя: секция выше экрана, внутри неё липкий кадр.
+ * Лишняя высота — это и есть «плёнка», по которой едет зум.
+ */
+.hero-runway {
+  height: 190vh;
+}
+
+/* Манифест наезжает на ещё приклеенный герой — отсюда перекрытие и скруглённый край. */
+.overlap-hero {
+  margin-top: -38vh;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Без анимации разгон превращается в два экрана пустоты — убираем и его, и перекрытие. */
+  .hero-runway {
+    height: 100dvh;
+  }
+
+  .overlap-hero {
+    margin-top: 0;
+  }
+}

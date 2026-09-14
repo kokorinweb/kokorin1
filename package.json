@@ -14,6 +14,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.71.0",
     "grammy": "^1.39.1",
+    "motion": "^13.2.0",
     "next": "^16.3.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

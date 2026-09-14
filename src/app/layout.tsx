@@ -5,11 +5,14 @@ import { CartProvider } from "@/components/CartContext";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { ChatWidget } from "@/components/ChatWidget";
+import { MotionProvider } from "@/components/motion/MotionProvider";
 import { RESTAURANT } from "@/lib/restaurant";
 
 const serif = Cormorant_Garamond({
   subsets: ["latin", "cyrillic"],
   weight: ["400", "600", "700"],
+  // Курсив нужен настоящий: в манифесте на главной им набраны акценты, а синтетический наклон антиквы выглядит дёшево.
+  style: ["normal", "italic"],
   variable: "--font-serif",
   display: "swap",
 });
@@ -42,12 +45,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ru" className={`${serif.variable} ${sans.variable}`}>
       <body className="paper flex min-h-dvh flex-col">
-        <CartProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <ChatWidget />
-        </CartProvider>
+        <MotionProvider>
+          <CartProvider>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <ChatWidget />
+          </CartProvider>
+        </MotionProvider>
       </body>
     </html>
   );

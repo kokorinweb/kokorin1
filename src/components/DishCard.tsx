@@ -1,21 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import { formatPrice, type MenuItem } from "@/lib/menu";
 import { useCart } from "./CartContext";
 
 export function DishCard({ item }: { item: MenuItem }) {
   const { add } = useCart();
   const [justAdded, setJustAdded] = useState(false);
+  /** Каждое нажатие — новая «плюс единица», иначе повторный клик не перезапускает анимацию. */
+  const [pulse, setPulse] = useState(0);
+  const timer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   function handleAdd() {
     add(item.id, 1);
     setJustAdded(true);
-    window.setTimeout(() => setJustAdded(false), 1400);
+    setPulse((n) => n + 1);
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setJustAdded(false), 1400);
   }
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-cream-dark bg-white/70 p-5 transition-shadow hover:shadow-lg hover:shadow-ink/5">
+    <motion.article
+      className="relative flex h-full flex-col rounded-2xl border border-cream-dark bg-white/70 p-5"
+      whileHover={{ y: -5, boxShadow: "0 18px 40px -18px rgba(34,29,23,0.28)" }}
+      transition={{ type: "spring", stiffness: 320, damping: 26 }}
+      style={{ boxShadow: "0 1px 2px rgba(34,29,23,0.04)" }}
+      whileTap={{ scale: 0.995 }}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="display text-xl leading-tight">{item.name}</h3>
@@ -43,17 +57,48 @@ export function DishCard({ item }: { item: MenuItem }) {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={handleAdd}
-        className={`mt-5 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors ${
-          justAdded
-            ? "bg-basil text-cream"
-            : "bg-cream-dark text-ink hover:bg-basil hover:text-cream"
-        }`}
-      >
-        {justAdded ? "Добавлено ✓" : "В корзину"}
-      </button>
-    </article>
+      <div className="relative mt-5">
+        <AnimatePresence>
+          {pulse > 0 && justAdded && (
+            <motion.span
+              key={pulse}
+              aria-hidden
+              className="pointer-events-none absolute right-3 top-0 text-sm font-bold text-basil"
+              initial={{ opacity: 0, y: 0 }}
+              animate={{ opacity: [0, 1, 1, 0], y: -26 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 1, ease: "easeOut" }}
+            >
+              +1
+            </motion.span>
+          )}
+        </AnimatePresence>
+
+        <motion.button
+          type="button"
+          onClick={handleAdd}
+          whileTap={{ scale: 0.96 }}
+          className={`w-full overflow-hidden rounded-full px-4 py-2.5 text-sm font-semibold transition-colors duration-300 ${
+            justAdded ? "bg-basil text-cream" : "bg-cream-dark text-ink hover:bg-basil hover:text-cream"
+          }`}
+        >
+          {/* Метки меняются подменой элемента: текст не дёргается, а перелистывается. */}
+          <span className="relative block h-5">
+            <AnimatePresence initial={false}>
+              <motion.span
+                key={justAdded ? "added" : "idle"}
+                className="absolute inset-0 flex items-center justify-center"
+                initial={{ y: "100%", opacity: 0 }}
+                animate={{ y: "0%", opacity: 1 }}
+                exit={{ y: "-100%", opacity: 0 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {justAdded ? "Добавлено ✓" : "В корзину"}
+              </motion.span>
+            </AnimatePresence>
+          </span>
+        </motion.button>
+      </div>
+    </motion.article>
   );
 }
