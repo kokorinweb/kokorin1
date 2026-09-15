@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Сифон</title>
+<meta name="description" content="«Сифон» — газировка на настоящем сиропе в стекле 0,33. Пять вкусов, 3,2 бара и автомат, который можно унести с собой.">
+<meta name="theme-color" content="#1F6F63">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800;900&family=Onest:wght@400;500;700&family=PT+Mono&display=swap">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<!-- ─────────── ПРЕЛОАДЕР ─────────── -->
+<div class="preloader" id="preloader" aria-hidden="true">
+  <div class="preloader__inner">
+    <div class="preloader__mark">СИФОН</div>
+    <div class="preloader__meter"><span class="preloader__fill" id="preloaderFill"></span></div>
+    <div class="preloader__row">
+      <span>НАЛИВАЕМ СИРОП</span>
+      <span class="mono" id="preloaderNum">00</span>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────── ШАПКА ─────────── -->
+<header class="head" id="head">
+  <a class="head__mark" href="#top">
+    <span class="head__bubble" aria-hidden="true"></span>
+    СИФОН
+  </a>
+  <nav class="head__nav" aria-label="Разделы">
+    <a href="#vkusy">Вкусы</a>
+    <a href="#avtomat">Автомат</a>
+    <a href="#akciya">Код под крышкой</a>
+    <a href="#voprosy">Вопросы</a>
+  </nav>
+  <a class="btn btn--sm head__cta" href="#kupit">Где купить</a>
+  <button class="head__burger" id="burger" aria-expanded="false" aria-controls="mobnav" aria-label="Открыть меню">
+    <span></span><span></span>
+  </button>
+  <div class="head__progress" id="headProgress" aria-hidden="true"></div>
+</header>
+
+<div class="mobnav" id="mobnav" hidden>
+  <a href="#vkusy">Вкусы</a>
+  <a href="#avtomat">Автомат</a>
+  <a href="#akciya">Код под крышкой</a>
+  <a href="#voprosy">Вопросы</a>
+  <a href="#kupit">Где купить</a>
+</div>
+
+<main id="top">
+
+<!-- ─────────── ГЕРОЙ ─────────── -->
+<section class="hero" id="hero">
+  <canvas class="hero__bubbles" id="bubbles" aria-hidden="true"></canvas>
+  <div class="hero__glow" aria-hidden="true"></div>
+
+  <div class="hero__grid">
+    <p class="eyebrow hero__eyebrow"><span>ГАЗ-ВОДА</span><span>СТЕКЛО 0,33 Л</span><span>5 СИРОПОВ</span></p>
+
+    <h1 class="hero__title" data-split>СИФОН</h1>
+
+    <div class="hero__bottle" id="heroBottle" data-tilt>
+      <div class="hero__shadow" aria-hidden="true"></div>
+      <svg class="bottle" viewBox="0 0 220 560" role="img" aria-label="Бутылка «Сифон» 0,33 л">
+        <defs>
+          <clipPath id="bottleClip">
+            <path d="M95 40 L95 104 C95 118 88 126 78 136 C66 148 60 164 60 184 L60 520 C60 534 71 545 85 545 L135 545 C149 545 160 534 160 520 L160 184 C160 164 154 148 142 136 C132 126 125 118 125 104 L125 40 Z"/>
+          </clipPath>
+          <linearGradient id="glassG" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#ffffff" stop-opacity=".40"/>
+            <stop offset=".22" stop-color="#ffffff" stop-opacity=".06"/>
+            <stop offset=".72" stop-color="#000000" stop-opacity=".10"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity=".26"/>
+          </linearGradient>
+          <linearGradient id="liquidG" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#000" stop-opacity=".22"/>
+            <stop offset=".3" stop-color="#fff" stop-opacity=".16"/>
+            <stop offset="1" stop-color="#000" stop-opacity=".26"/>
+          </linearGradient>
+        </defs>
+
+        <!-- жидкость -->
+        <g clip-path="url(#bottleClip)">
+          <rect class="bottle__liquid" x="55" y="150" width="110" height="400"/>
+          <rect x="55" y="150" width="110" height="400" fill="url(#liquidG)"/>
+          <g class="bottle__fizz">
+            <circle cx="82" cy="470" r="4"/><circle cx="104" cy="420" r="3"/>
+            <circle cx="128" cy="500" r="5"/><circle cx="95" cy="350" r="2.5"/>
+            <circle cx="138" cy="390" r="3.5"/><circle cx="72" cy="300" r="3"/>
+            <circle cx="118" cy="270" r="2.5"/><circle cx="145" cy="460" r="2"/>
+          </g>
+        </g>
+
+        <!-- этикетка -->
+        <g class="bottle__label">
+          <rect x="58" y="292" width="104" height="128" rx="3"/>
+          <rect class="bottle__labelEdge" x="58" y="292" width="104" height="8"/>
+          <rect class="bottle__labelEdge" x="58" y="412" width="104" height="8"/>
+          <text x="110" y="330" text-anchor="middle" class="bottle__labelMark">СИФОН</text>
+          <text x="110" y="352" text-anchor="middle" class="bottle__labelSub" id="bottleFlavor">ТАРХУН</text>
+          <text x="110" y="396" text-anchor="middle" class="bottle__labelVol">0,33 Л · 3,2 БАР</text>
+        </g>
+
+        <!-- стекло -->
+        <path clip-path="url(#bottleClip)" d="M0 0h220v560H0z" fill="url(#glassG)"/>
+        <path class="bottle__outline" d="M95 40 L95 104 C95 118 88 126 78 136 C66 148 60 164 60 184 L60 520 C60 534 71 545 85 545 L135 545 C149 545 160 534 160 520 L160 184 C160 164 154 148 142 136 C132 126 125 118 125 104 L125 40 Z"/>
+        <path class="bottle__shine" d="M74 190 C70 250 70 420 74 512"/>
+
+        <!-- крышка -->
+        <g class="bottle__cap">
+          <rect x="88" y="14" width="44" height="30" rx="4"/>
+          <path class="bottle__capTeeth" d="M88 20h44M88 26h44M88 32h44M88 38h44"/>
+        </g>
+      </svg>
+      <span class="pricetag" aria-hidden="true">
+        <svg viewBox="0 0 120 120"><path id="pricearc" d="M60,60 m-42,0 a42,42 0 1,1 84,0 a42,42 0 1,1 -84,0" fill="none"/>
+        <text><textPath href="#pricearc">СИФОН · ГАЗ-ВОДА · С СИРОПОМ · </textPath></text></svg>
+        <b>3<i>КОП</i></b>
+      </span>
+    </div>
+
+    <div class="hero__aside">
+      <p class="hero__lead">Газировка на настоящем сиропе. Такая же, как из автомата на углу, — только теперь её можно унести с собой.</p>
+      <div class="hero__actions">
+        <a class="btn btn--crimson" href="#vkusy">Выбрать вкус</a>
+        <a class="btn btn--ghost" href="#avtomat">Налить в автомате</a>
+      </div>
+      <dl class="hero__specs">
+        <div><dt>Газ</dt><dd class="mono">3,2 бар</dd></div>
+        <div><dt>Объём</dt><dd class="mono">0,33 л</dd></div>
+        <div><dt>Сиропов</dt><dd class="mono">5</dd></div>
+      </dl>
+    </div>
+
+    <a class="hero__cue" href="#manifest" aria-label="Листайте вниз">
+      <span class="hero__cueLine" aria-hidden="true"></span>
+      <span>Листайте</span>
+    </a>
+  </div>
+
+  <div class="marquee marquee--hero" aria-hidden="true">
+    <div class="marquee__track" data-marquee>
+      <span>С СИРОПОМ, А НЕ С АРОМАТИЗАТОРОМ</span><i>✳</i>
+      <span>СТЕКЛО 0,33</span><i>✳</i>
+      <span>3,2 БАРА</span><i>✳</i>
+      <span>ПЯТЬ ВКУСОВ, НИ ОДНОГО «МУЛЬТИФРУКТА»</span><i>✳</i>
+      <span>СДАЧИ НЕТ</span><i>✳</i>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── МАНИФЕСТ (пин + скраб) ─────────── -->
+<section class="manifest" id="manifest">
+  <div class="manifest__stage" id="manifestStage">
+    <div class="manifest__bottle" id="manifestBottle" aria-hidden="true">
+      <svg class="bottle bottle--flat" viewBox="0 0 220 560">
+
+        <path class="bottle__ghost" d="M95 40 L95 104 C95 118 88 126 78 136 C66 148 60 164 60 184 L60 520 C60 534 71 545 85 545 L135 545 C149 545 160 534 160 520 L160 184 C160 164 154 148 142 136 C132 126 125 118 125 104 L125 40 Z"/>
+        <rect class="bottle__ghostCap" x="88" y="14" width="44" height="30" rx="4"/>
+      </svg>
+    </div>
+    <ol class="manifest__beats">
+      <li class="manifest__beat is-on">
+        <span class="manifest__num mono">01</span>
+        <h2>Сначала — сироп</h2>
+        <p>Тархун варят из эстрагона, а не из ароматизатора «зелёный». Сироп настаивается пять суток и только потом встречается с водой.</p>
+      </li>
+      <li class="manifest__beat">
+        <span class="manifest__num mono">02</span>
+        <h2>Потом — газ</h2>
+        <p>3,2 бара. Ровно столько держал старый автомат, когда бил струёй в гранёный стакан. Меньше — это лимонад, а не газировка.</p>
+      </li>
+      <li class="manifest__beat">
+        <span class="manifest__num mono">03</span>
+        <h2>И только потом — бутылка</h2>
+        <p>Стекло 0,33. Оно не отдаёт вкус пластиком и держит пузырь до последнего глотка. Крышка — кронен, с кодом на внутренней стороне.</p>
+      </li>
+    </ol>
+    <div class="manifest__rail" aria-hidden="true"><span id="manifestRail"></span></div>
+  </div>
+</section>
+
+<!-- ─────────── ВКУСЫ (горизонтальный скролл) ─────────── -->
+<section class="flavors" id="vkusy">
+  <div class="flavors__pin" id="flavorsPin">
+    <header class="flavors__head">
+      <p class="eyebrow"><span>ПЯТЬ СИРОПОВ</span></p>
+      <h2 class="flavors__title">Вкусы</h2>
+      <p class="flavors__hint mono" aria-hidden="true">ЛИСТАЙТЕ ▸</p>
+    </header>
+    <div class="flavors__track" id="flavorsTrack">
+
+      <article class="flav" style="--flav:#2E8B57;--flavInk:#0C1F14">
+        <div class="flav__num mono">01 / 05</div>
+        <div class="flav__art"><div class="flav__blob" aria-hidden="true"></div>
+          <svg class="bottle" viewBox="0 0 220 560" aria-hidden="true">
+            <g clip-path="url(#bottleClip)"><rect class="bottle__liquid" x="55" y="150" width="110" height="400"/><rect x="55" y="150" width="110" height="400" fill="url(#liquidG)"/></g>
+            <g class="bottle__label"><rect x="58" y="292" width="104" height="128" rx="3"/>
+              <rect class="bottle__labelEdge" x="58" y="292" width="104" height="8"/><rect class="bottle__labelEdge" x="58" y="412" width="104" height="8"/>
+              <text x="110" y="330" text-anchor="middle" class="bottle__labelMark">СИФОН</text>
+              <text x="110" y="352" text-anchor="middle" class="bottle__labelSub">ТАРХУН</text>
+              <text x="110" y="396" text-anchor="middle" class="bottle__labelVol">0,33 Л</text></g>
+            <path clip-path="url(#bottleClip)" d="M0 0h220v560H0z" fill="url(#glassG)"/>
+            <path class="bottle__outline" d="M95 40 L95 104 C95 118 88 126 78 136 C66 148 60 164 60 184 L60 520 C60 534 71 545 85 545 L135 545 C149 545 160 534 160 520 L160 184 C160 164 154 148 142 136 C132 126 125 118 125 104 L125 40 Z"/>
+            <g class="bottle__cap"><rect x="88" y="14" width="44" height="30" rx="4"/><path class="bottle__capTeeth" d="M88 20h44M88 26h44M88 32h44M88 38h44"/></g>
+          </svg>
+        </div>
+        <div class="flav__body">
+          <h3>Тархун</h3>
+          <p class="flav__notes">Эстрагон · лайм · щепоть соли</p>
+          <p class="flav__desc">Травяной и прохладный. Тот самый зелёный, из-за которого в детстве красился язык, — только зелёный здесь от эстрагона, а не от красителя.</p>
+          <dl class="flav__facts">
+            <div><dt>Сахар</dt><dd class="mono">8,2 г / 100 мл</dd></div>
+            <div><dt>Энергия</dt><dd class="mono">34 ккал</dd></div>
+            <div><dt>Подавать</dt><dd class="mono">+6 °C</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="flav" style="--flav:#C4302B;--flavInk:#2A0B09">
+        <div class="flav__num mono">02 / 05</div>
+        <div class="flav__art"><div class="flav__blob" aria-hidden="true"></div>
+          <svg class="bottle" viewBox="0 0 220 560" aria-hidden="true">
+            <g clip-path="url(#bottleClip)"><rect class="bottle__liquid" x="55" y="150" width="110" height="400"/><rect x="55" y="150" width="110" height="400" fill="url(#liquidG)"/></g>
+            <g class="bottle__label"><rect x="58" y="292" width="104" height="128" rx="3"/>
+              <rect class="bottle__labelEdge" x="58" y="292" width="104" height="8"/><rect class="bottle__labelEdge" x="58" y="412" width="104" height="8"/>
+              <text x="110" y="330" text-anchor="middle" class="bottle__labelMark">СИФОН</text>
+              <text x="110" y="352" text-anchor="middle" class="bottle__labelSub">БАРБАРИС</text>
+              <text x="110" y="396" text-anchor="middle" class="bottle__labelVol">0,33 Л</text></g>
+            <path clip-path="url(#bottleClip)" d="M0 0h220v560H0z" fill="url(#glassG)"/>
+            <path class="bottle__outline" d="M95 40 L95 104 C95 118 88 126 78 136 C66 148 60 164 60 184 L60 520 C60 534 71 545 85 545 L135 545 C149 545 160 534 160 520 L160 184 C160 164 154 148 142 136 C132 126 125 118 125 104 L125 40 Z"/>
+            <g class="bottle__cap"><rect x="88" y="14" width="44" height="30" rx="4"/><path class="bottle__capTeeth" d="M88 20h44M88 26h44M88 32h44M88 38h44"/></g>
+          </svg>
+        </div>
+        <div class="flav__body">
+          <h3>Барбарис</h3>
+          <p class="flav__notes">Барбарис · красная смородина</p>
+          <p class="flav__desc">Кисло-сладкий и колючий. Вкус тех самых полосатых леденцов, которые лежали в вазочке и всегда слипались в один комок.</p>
+          <dl class="flav__facts">
+            <div><dt>Сахар</dt><dd class="mono">9,1 г / 100 мл</dd></div>
+            <div><dt>Энергия</dt><dd class="mono">38 ккал</dd></div>
+            <div><dt>Подавать</dt><dd class="mono">+6 °C</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="flav" style="--flav:#D9A62E;--flavInk:#2B1E05">
+        <div class="flav__num mono">03 / 05</div>
+        <div class="flav__art"><div class="flav__blob" aria-hidden="true"></div>
+          <svg class="bottle" viewBox="0 0 220 560" aria-hidden="true">
+            <g clip-path="url(#bottleClip)"><rect class="bottle__liquid" x="55" y="150" width="110" height="400"/><rect x="55" y="150" width="110" height="400" fill="url(#liquidG)"/></g>
+            <g class="bottle__label"><rect x="58" y="292" width="104" height="128" rx="3"/>
+              <rect class="bottle__labelEdge" x="58" y="292" width="104" height="8"/><rect class="bottle__labelEdge" x="58" y="412" width="104" height="8"/>
+              <text x="110" y="330" text-anchor="middle" class="bottle__labelMark">СИФОН</text>
+              <text x="110" y="352" text-anchor="middle" class="bottle__labelSub">ДЮШЕС</text>
+              <text x="110" y="396" text-anchor="middle" class="bottle__labelVol">0,33 Л</text></g>
+            <path clip-path="url(#bottleClip)" d="M0 0h220v560H0z" fill="url(#glassG)"/>
+            <path class="bottle__outline" d="M95 40 L95 104 C95 118 88 126 78 136 C66 148 60 164 60 184 L60 520 C60 534 71 545 85 545 L135 545 C149 545 160 534 160 520 L160 184 C160 164 154 148 142 136 C132 126 125 118 125 104 L125 40 Z"/>
+            <g class="bottle__cap"><rect x="88" y="14" width="44" height="30" rx="4"/><path class="bottle__capTeeth" d="M88 20h44M88 26h44M88 32h44M88 38h44"/></g>
+          </svg>
+        </div>
+        <div class="flav__body">
+          <h3>Дюшес</h3>
+          <p class="flav__notes">Груша дюшес · ваниль</p>
+          <p class="flav__desc">Мягкий, почти сливочный. Единственный из пяти, который не спорит с едой, — поэтому его чаще всего покупают ящиком.</p>
+          <dl class="flav__facts">
+            <div><dt>Сахар</dt><dd class="mono">9,6 г / 100 мл</dd></div>
+            <div><dt>Энергия</dt><dd class="mono">40 ккал</dd></div>
+            <div><dt>Подавать</dt><dd class="mono">+6 °C</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="flav" style="--flav:#B4552A;--flavInk:#2A1207">
+        <div class="flav__num mono">04 / 05</div>
+        <div class="flav__art"><div class="flav__blob" aria-hidden="true"></div>
+          <svg class="bottle" viewBox="0 0 220 560" aria-hidden="true">
+            <g clip-path="url(#bottleClip)"><rect class="bottle__liquid" x="55" y="150" width="110" height="400"/><rect x="55" y="150" width="110" height="400" fill="url(#liquidG)"/></g>
+            <g class="bottle__label"><rect x="58" y="292" width="104" height="128" rx="3"/>
+              <rect class="bottle__labelEdge" x="58" y="292" width="104" height="8"/><rect class="bottle__labelEdge" x="58" y="412" width="104" height="8"/>
+              <text x="110" y="330" text-anchor="middle" class="bottle__labelMark">СИФОН</text>
+              <text x="110" y="352" text-anchor="middle" class="bottle__labelSub">САЯНЫ</text>
+              <text x="110" y="396" text-anchor="middle" class="bottle__labelVol">0,33 Л</text></g>
+            <path clip-path="url(#bottleClip)" d="M0 0h220v560H0z" fill="url(#glassG)"/>
+            <path class="bottle__outline" d="M95 40 L95 104 C95 118 88 126 78 136 C66 148 60 164 60 184 L60 520 C60 534 71 545 85 545 L135 545 C149 545 160 534 160 520 L160 184 C160 164 154 148 142 136 C132 126 125 118 125 104 L125 40 Z"/>
+            <g class="bottle__cap"><rect x="88" y="14" width="44" height="30" rx="4"/><path class="bottle__capTeeth" d="M88 20h44M88 26h44M88 32h44M88 38h44"/></g>
+          </svg>
+        </div>
+        <div class="flav__body">
+          <h3>Саяны</h3>
+          <p class="flav__notes">Левзея · цитрус · горечь</p>
+          <p class="flav__desc">Самый взрослый вкус в линейке. Горчит на финише — и именно за это его либо берут постоянно, либо не берут никогда.</p>
+          <dl class="flav__facts">
+            <div><dt>Сахар</dt><dd class="mono">7,4 г / 100 мл</dd></div>
+            <div><dt>Энергия</dt><dd class="mono">31 ккал</dd></div>
+            <div><dt>Подавать</dt><dd class="mono">+6 °C</dd></div>
+          </dl>
+        </div>
+      </article>
+
+      <article class="flav" style="--flav:#E4D3A3;--flavInk:#2A2415">
+        <div class="flav__num mono">05 / 05</div>
+        <div class="flav__art"><div class="flav__blob" aria-hidden="true"></div>
+          <svg class="bottle" viewBox="0 0 220 560" aria-hidden="true">
+            <g clip-path="url(#bottleClip)"><rect class="bottle__liquid" x="55" y="150" width="110" height="400"/><rect x="55" y="150" width="110" height="400" fill="url(#liquidG)"/></g>
+            <g class="bottle__label"><rect x="58" y="292" width="104" height="128" rx="3"/>
+              <rect class="bottle__labelEdge" x="58" y="292" width="104" height="8"/><rect class="bottle__labelEdge" x="58" y="412" width="104" height="8"/>
+              <text x="110" y="330" text-anchor="middle" class="bottle__labelMark">СИФОН</text>
+              <text x="110" y="352" text-anchor="middle" class="bottle__labelSub">КРЕМ-СОДА</text>
+              <text x="110" y="396" text-anchor="middle" class="bottle__labelVol">0,33 Л</text></g>
+            <path clip-path="url(#bottleClip)" d="M0 0h220v560H0z" fill="url(#glassG)"/>
+            <path class="bottle__outline" d="M95 40 L95 104 C95 118 88 126 78 136 C66 148 60 164 60 184 L60 520 C60 534 71 545 85 545 L135 545 C149 545 160 534 160 520 L160 184 C160 164 154 148 142 136 C132 126 125 118 125 104 L125 40 Z"/>
+            <g class="bottle__cap"><rect x="88" y="14" width="44" height="30" rx="4"/><path class="bottle__capTeeth" d="M88 20h44M88 26h44M88 32h44M88 38h44"/></g>
+          </svg>
+        </div>
+        <div class="flav__body">
+          <h3>Крем-сода</h3>
+          <p class="flav__notes">Ваниль · сливки · лимон</p>
+          <p class="flav__desc">Десерт, который шипит. Ванильный, но с лимонной кислинкой, чтобы не превращаться в молочный коктейль.</p>
+          <dl class="flav__facts">
+            <div><dt>Сахар</dt><dd class="mono">10,2 г / 100 мл</dd></div>
+            <div><dt>Энергия</dt><dd class="mono">42 ккал</dd></div>
+            <div><dt>Подавать</dt><dd class="mono">+6 °C</dd></div>
+          </dl>
+        </div>
+      </article>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── ФАКТЫ ─────────── -->
+<section class="facts" id="facts">
+  <div class="wrap">
+    <header class="sec__head">
+      <p class="eyebrow"><span>ЧТО ВНУТРИ</span></p>
+      <h2 class="sec__title">Шесть цифр<br>вместо рекламы</h2>
+    </header>
+    <ul class="facts__list">
+      <li class="fact"><span class="fact__val mono" data-count="3.2" data-dec="1">0,0</span><span class="fact__unit">бар</span><p>Давление в бутылке. Столько держал уличный автомат — и столько держим мы.</p></li>
+      <li class="fact"><span class="fact__val mono" data-count="0.33" data-dec="2">0,00</span><span class="fact__unit">литра</span><p>Стекло, а не пластик. Ровно столько влезало в гранёный стакан с запасом на пену.</p></li>
+      <li class="fact"><span class="fact__val mono" data-count="5">0</span><span class="fact__unit">сиропа</span><p>Пять вкусов и ни одного «мультифрукта». Каждый варится отдельно, партиями по 400 литров.</p></li>
+      <li class="fact"><span class="fact__val mono" data-count="120">0</span><span class="fact__unit">часов</span><p>Столько сироп настаивается до розлива. Быстрее — получается сладкая вода.</p></li>
+      <li class="fact"><span class="fact__val mono" data-count="6">0</span><span class="fact__unit">°C</span><p>Температура подачи. Теплее — уходит газ, холоднее — не чувствуется сироп.</p></li>
+      <li class="fact"><span class="fact__val mono" data-count="0">0</span><span class="fact__unit">красителей</span><p>Цвет берётся из самого сиропа. Поэтому тархун у нас мутноватый, а не ядовитый.</p></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─────────── АВТОМАТ ─────────── -->
+<section class="mach" id="avtomat">
+  <div class="wrap mach__wrap">
+    <header class="sec__head sec__head--light">
+      <p class="eyebrow"><span>ИНТЕРАКТИВ</span></p>
+      <h2 class="sec__title">Автомат<br>газированной воды</h2>
+      <p class="sec__lead">Выберите сироп, бросьте монету и нажмите. Стакан мыть не надо — 2026 год на дворе.</p>
+    </header>
+
+    <div class="mach__unit">
+      <div class="mach__body">
+        <div class="mach__topplate">
+          <span class="mach__brand">СИФОН · АТ-101</span>
+          <span class="mach__lamp" id="machLamp" aria-hidden="true"></span>
+        </div>
+
+        <div class="mach__screen" id="machScreen">
+          <span class="mach__screenText mono" id="machStatus">ОПУСТИТЕ МОНЕТУ</span>
+        </div>
+
+        <fieldset class="mach__syrups">
+          <legend class="vh">Выберите сироп</legend>
+          <button type="button" class="syr is-on" data-syrup="Тархун" data-color="#2E8B57" aria-pressed="true"><span class="syr__dot" style="--s:#2E8B57"></span>Тархун</button>
+          <button type="button" class="syr" data-syrup="Барбарис" data-color="#C4302B" aria-pressed="false"><span class="syr__dot" style="--s:#C4302B"></span>Барбарис</button>
+          <button type="button" class="syr" data-syrup="Дюшес" data-color="#D9A62E" aria-pressed="false"><span class="syr__dot" style="--s:#D9A62E"></span>Дюшес</button>
+          <button type="button" class="syr" data-syrup="Саяны" data-color="#B4552A" aria-pressed="false"><span class="syr__dot" style="--s:#B4552A"></span>Саяны</button>
+          <button type="button" class="syr" data-syrup="Крем-сода" data-color="#E4D3A3" aria-pressed="false"><span class="syr__dot" style="--s:#E4D3A3"></span>Крем-сода</button>
+          <button type="button" class="syr" data-syrup="Без сиропа" data-color="#CBE0DA" aria-pressed="false"><span class="syr__dot" style="--s:#CBE0DA"></span>Без сиропа</button>
+        </fieldset>
+
+        <div class="mach__niche">
+          <div class="mach__nozzle" aria-hidden="true"><span class="mach__jet" id="machJet"></span></div>
+          <div class="glass" id="glass" aria-hidden="true">
+            <div class="glass__liquid" id="glassLiquid"><span class="glass__foam"></span></div>
+            <div class="glass__facets"></div>
+            <div class="glass__shine"></div>
+          </div>
+        </div>
+
+        <div class="mach__controls">
+          <div class="mach__coin">
+            <button type="button" class="coin" id="coin" aria-label="Бросить монету 3 копейки">
+              <span class="coin__disc">3<small>коп</small></span>
+            </button>
+            <span class="mach__plate mono">СДАЧИ НЕТ</span>
+          </div>
+          <button type="button" class="mach__go" id="machGo" disabled>Налить</button>
+        </div>
+      </div>
+
+      <aside class="mach__side">
+        <p class="mach__sideTitle">Как это было</p>
+        <p>Один стакан газировки стоил три копейки — с сиропом. Без сиропа — одну. Стакан был общий, гранёный, и его полагалось сполоснуть в специальном фонтанчике, перевернув вверх дном.</p>
+        <p>Мы оставили от автомата всё, кроме общего стакана: тот же сироп, то же давление, тот же удар струи. И добавили крышку, под которой лежит код.</p>
+        <ul class="mach__legend">
+          <li><span class="mono">1 коп.</span> вода без сиропа</li>
+          <li><span class="mono">3 коп.</span> вода с сиропом</li>
+          <li><span class="mono">0 коп.</span> здесь, на сайте</li>
+        </ul>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── АКЦИЯ ─────────── -->
+<section class="promo" id="akciya">
+  <div class="wrap">
+    <header class="sec__head">
+      <p class="eyebrow"><span>АКЦИЯ ДО 31 ДЕКАБРЯ</span></p>
+      <h2 class="sec__title">Код под крышкой</h2>
+      <p class="sec__lead">Внутри каждой кронен-крышки выбит код из шести знаков. Введите его — и он встанет в очередь на розыгрыш.</p>
+    </header>
+
+    <ol class="steps">
+      <li class="step"><span class="step__n mono">01</span><h3>Купите «Сифон»</h3><p>Любой из пяти вкусов. Крышка откручивается открывалкой — берегите пальцы.</p></li>
+      <li class="step"><span class="step__n mono">02</span><h3>Найдите код</h3><p>Шесть знаков на внутренней стороне крышки. Латиница и цифры, без нуля и буквы O.</p></li>
+      <li class="step"><span class="step__n mono">03</span><h3>Введите его здесь</h3><p>Один код — один шанс. Крышки не копятся, но и не сгорают до конца акции.</p></li>
+    </ol>
+
+    <div class="promo__panel">
+      <form class="codeform" id="codeform" novalidate>
+        <label class="codeform__label" for="code">Код с крышки</label>
+        <div class="codeform__row">
+          <input class="codeform__input mono" id="code" name="code" type="text" inputmode="latin" autocomplete="off" maxlength="7" placeholder="SFN-2КР" aria-describedby="codehint">
+          <button class="btn btn--crimson" type="submit">Отправить</button>
+        </div>
+        <p class="codeform__hint" id="codehint">Шесть знаков без пробелов. Дефис можно не ставить.</p>
+        <p class="codeform__msg" id="codemsg" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="countdown" id="countdown">
+        <p class="countdown__cap mono">ДО РОЗЫГРЫША</p>
+        <div class="countdown__grid">
+          <div><b class="mono" data-cd="d">00</b><span>дней</span></div>
+          <div><b class="mono" data-cd="h">00</b><span>часов</span></div>
+          <div><b class="mono" data-cd="m">00</b><span>минут</span></div>
+          <div><b class="mono" data-cd="s">00</b><span>секунд</span></div>
+        </div>
+      </div>
+    </div>
+
+    <ul class="prizes">
+      <li class="prize prize--big">
+        <span class="prize__qty mono">1 шт.</span>
+        <h3>Настоящий АТ-101</h3>
+        <p>Восстановленный автомат газированной воды, подключённый и залитый сиропом. Привозим и ставим сами.</p>
+      </li>
+      <li class="prize">
+        <span class="prize__qty mono">50 шт.</span>
+        <h3>Ящик «Сифона»</h3>
+        <p>24 бутылки, все пять вкусов в одной деревянной обрешётке.</p>
+      </li>
+      <li class="prize">
+        <span class="prize__qty mono">2 000 шт.</span>
+        <h3>Гранёный стакан</h3>
+        <p>250 мл, шестнадцать граней, с гравировкой «сдачи нет».</p>
+      </li>
+    </ul>
+  </div>
+</section>
+
+<!-- ─────────── ОТЗЫВЫ ─────────── -->
+<section class="says" id="says" aria-label="Что говорят">
+  <div class="marquee marquee--says">
+    <div class="marquee__track" data-marquee data-dir="1">
+      <figure class="say"><blockquote>«Взял тархун из любопытства, теперь беру ящиками. Язык, кстати, не красится.»</blockquote><figcaption>Артём, 34</figcaption></figure>
+      <figure class="say"><blockquote>«Саяны горчат так, что первый глоток был ошибкой, а третий — привычкой.»</blockquote><figcaption>Лиза, 27</figcaption></figure>
+      <figure class="say"><blockquote>«Купил ради кода под крышкой. Автомат не выиграл, стакан выиграл. Пью из него чай.»</blockquote><figcaption>Дмитрий, 41</figcaption></figure>
+      <figure class="say"><blockquote>«Дюшес — единственная газировка, которую дети пьют медленно.»</blockquote><figcaption>Ольга, 38</figcaption></figure>
+    </div>
+  </div>
+  <div class="marquee marquee--says marquee--slow">
+    <div class="marquee__track" data-marquee data-dir="-1">
+      <figure class="say"><blockquote>«Пузырь держится до конца бутылки. Проверял: открыл, ушёл, вернулся через полчаса.»</blockquote><figcaption>Никита, 29</figcaption></figure>
+      <figure class="say"><blockquote>«Барбарис на вкус ровно как те леденцы. Не знаю, как они это сделали.»</blockquote><figcaption>Марина, 45</figcaption></figure>
+      <figure class="say"><blockquote>«Крем-сода отлично идёт с кислым — беру к лимонному пирогу.»</blockquote><figcaption>Егор, 31</figcaption></figure>
+      <figure class="say"><blockquote>«Стекло тяжёлое и холодное. Половина удовольствия — в бутылке, а не в содержимом.»</blockquote><figcaption>Света, 26</figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── ВОПРОСЫ ─────────── -->
+<section class="faq" id="voprosy">
+  <div class="wrap faq__wrap">
+    <header class="sec__head">
+      <p class="eyebrow"><span>ЧАСТО СПРАШИВАЮТ</span></p>
+      <h2 class="sec__title">Вопросы</h2>
+    </header>
+    <div class="faq__list">
+      <details class="qa"><summary><span>Почему тархун мутный?</span></summary><div class="qa__body"><p>Потому что цвет даёт настой эстрагона, а он не бывает прозрачно-изумрудным. Мутность — это взвесь из самого растения, она оседает, если бутылка постоит. Взболтайте — и всё вернётся.</p></div></details>
+      <details class="qa"><summary><span>Сколько держится газ после открытия?</span></summary><div class="qa__body"><p>При +6 °C и закрытой крышке — около суток без заметной потери. В тепле бутылка выдыхается за пару часов, поэтому мы так настойчиво пишем про шесть градусов.</p></div></details>
+      <details class="qa"><summary><span>Почему стекло, а не банка?</span></summary><div class="qa__body"><p>Банка дешевле и легче, но алюминий отдаёт металлический привкус кислым сиропам — особенно барбарису. Стекло инертно и держит давление лучше.</p></div></details>
+      <details class="qa"><summary><span>Код с крышки можно ввести один раз?</span></summary><div class="qa__body"><p>Да. Повторный ввод того же кода не добавит шанс, но и не аннулирует первый. Все введённые коды участвуют во всех оставшихся розыгрышах до конца акции.</p></div></details>
+      <details class="qa"><summary><span>Куда вы поставите автомат, если я выиграю?</span></summary><div class="qa__body"><p>Куда скажете, если туда пролезет дверной проём 80 см и есть розетка 220 В. Автомат весит 160 кг, поэтому седьмой этаж без лифта мы честно попросим заменить на ящик газировки.</p></div></details>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────── ФИНАЛ ─────────── -->
+<section class="fin" id="kupit">
+  <div class="fin__type" aria-hidden="true"><span data-split>ПЕЙ КАК РАНЬШЕ</span></div>
+  <div class="wrap fin__wrap">
+    <div class="fin__cols">
+      <div>
+        <h2 class="fin__h">Где купить</h2>
+        <ul class="fin__where">
+          <li><b>Супермаркеты</b><span>полка с лимонадами, нижний ярус</span></li>
+          <li><b>Маркетплейсы</b><span>ящик 24 бутылки, доставка от двух дней</span></li>
+          <li><b>Кофейни и бары</b><span>102 точки, список обновляем по понедельникам</span></li>
+        </ul>
+      </div>
+      <form class="sub" id="sub" novalidate>
+        <h2 class="fin__h">Письмо про новый сироп</h2>
+        <p class="sub__note">Шестой вкус варится с марта. Напишем один раз, когда он поедет в розлив.</p>
+        <label class="vh" for="mail">Почта</label>
+        <div class="sub__row">
+          <input class="sub__input" id="mail" name="mail" type="email" placeholder="pochta@example.ru" autocomplete="email">
+          <button class="btn btn--paper" type="submit">Подписаться</button>
+        </div>
+        <p class="sub__msg" id="submsg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- ─────────── ПОДВАЛ ─────────── -->
+<footer class="foot">
+  <div class="wrap foot__wrap">
+    <div class="foot__cols">
+      <div class="foot__col">
+        <p class="foot__cap mono">ПРОДУКТ</p>
+        <a href="#vkusy">Вкусы</a><a href="#facts">Состав</a><a href="#avtomat">Автомат</a>
+      </div>
+      <div class="foot__col">
+        <p class="foot__cap mono">АКЦИЯ</p>
+        <a href="#akciya">Код под крышкой</a><a href="#akciya">Призы</a><a href="#voprosy">Вопросы</a>
+      </div>
+      <div class="foot__col">
+        <p class="foot__cap mono">СВЯЗЬ</p>
+        <a href="#kupit">Где купить</a><a href="#kupit">Подписка</a>
+      </div>
+    </div>
+    <p class="foot__legal">«Сифон» — вымышленная торговая марка. Сайт сделан как демонстрация промо-лендинга: акция, призы, отзывы и характеристики придуманы и ничего не рекламируют.</p>
+  </div>
+  <div class="foot__mark" aria-hidden="true">СИФОН</div>
+</footer>
+
+<div class="grain" aria-hidden="true"></div>
+
+<script src="assets/vendor/gsap.min.js"></script>
+<script src="assets/vendor/ScrollTrigger.min.js"></script>
+<script src="assets/vendor/lenis.min.js"></script>
+<script src="assets/js/main.js"></script>
+</body>
+</html>
