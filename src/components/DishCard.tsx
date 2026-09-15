@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
+import { CheckIcon } from "./icons";
 import { formatPrice, type MenuItem } from "@/lib/menu";
 import { useCart } from "./CartContext";
 
@@ -24,7 +25,7 @@ export function DishCard({ item }: { item: MenuItem }) {
 
   return (
     <motion.article
-      className="relative flex h-full flex-col rounded-2xl border border-cream-dark bg-white/70 p-5"
+      className="relative flex h-full flex-col rounded-2xl border border-plaster-dark bg-shell p-5"
       whileHover={{ y: -5, boxShadow: "0 18px 40px -18px rgba(34,29,23,0.28)" }}
       transition={{ type: "spring", stiffness: 320, damping: 26 }}
       style={{ boxShadow: "0 1px 2px rgba(34,29,23,0.04)" }}
@@ -51,7 +52,7 @@ export function DishCard({ item }: { item: MenuItem }) {
           <span className="rounded-full bg-terracotta/10 px-2 py-0.5 text-terracotta">острое</span>
         )}
         {item.allergens.length > 0 && (
-          <span className="rounded-full bg-cream-dark px-2 py-0.5 text-ink-soft">
+          <span className="rounded-full bg-plaster-dark px-2 py-0.5 text-ink-soft">
             аллергены: {item.allergens.join(", ")}
           </span>
         )}
@@ -78,8 +79,8 @@ export function DishCard({ item }: { item: MenuItem }) {
           type="button"
           onClick={handleAdd}
           whileTap={{ scale: 0.96 }}
-          className={`w-full overflow-hidden rounded-full px-4 py-2.5 text-sm font-semibold transition-colors duration-300 ${
-            justAdded ? "bg-basil text-cream" : "bg-cream-dark text-ink hover:bg-basil hover:text-cream"
+          className={`w-full overflow-hidden rounded-full px-4 py-3 text-sm font-semibold transition-colors duration-300 ${
+            justAdded ? "bg-basil text-on-basil" : "bg-plaster-dark text-ink hover:bg-basil hover:text-on-basil"
           }`}
         >
           {/* Метки меняются подменой элемента: текст не дёргается, а перелистывается. */}
@@ -93,7 +94,14 @@ export function DishCard({ item }: { item: MenuItem }) {
                 exit={{ y: "-100%", opacity: 0 }}
                 transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
               >
-                {justAdded ? "Добавлено ✓" : "В корзину"}
+                {justAdded ? (
+                  <>
+                    <CheckIcon className="mr-1.5 h-4 w-4" />
+                    Добавлено
+                  </>
+                ) : (
+                  "В корзину"
+                )}
               </motion.span>
             </AnimatePresence>
           </span>

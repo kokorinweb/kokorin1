@@ -1,5 +1,6 @@
 "use client";
 
+import { ArrowRightIcon, ChatIcon, CloseIcon } from "./icons";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "./CartContext";
@@ -100,11 +101,11 @@ export function ChatWidget() {
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-controls="chat-panel"
-        className="fixed bottom-5 right-5 z-50 flex h-14 items-center gap-2 rounded-full bg-terracotta px-5 text-cream shadow-lg shadow-ink/20 transition-transform hover:scale-105"
+        /* На узком экране у кнопки остаётся одна иконка, поэтому имя задаём явно. */
+        aria-label={open ? "Закрыть чат с консультантом" : "Спросить ИИ-консультанта"}
+        className="fixed bottom-5 right-5 z-50 flex h-14 items-center gap-2 rounded-full bg-terracotta px-5 text-on-terracotta shadow-lg shadow-ink/20 transition-transform hover:scale-105"
       >
-        <span aria-hidden className="text-xl">
-          {open ? "×" : "💬"}
-        </span>
+        {open ? <CloseIcon className="h-5 w-5" /> : <ChatIcon className="h-5 w-5" />}
         <span className="hidden text-sm font-semibold sm:inline">
           {open ? "Закрыть" : "Спросить Луку"}
         </span>
@@ -115,10 +116,10 @@ export function ChatWidget() {
           id="chat-panel"
           role="dialog"
           aria-label="ИИ-консультант ресторана"
-          className="rise fixed bottom-24 right-4 z-50 flex max-h-[min(560px,calc(100dvh-8rem))] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-cream-dark bg-cream shadow-2xl shadow-ink/20"
+          className="rise fixed bottom-24 right-4 z-50 flex max-h-[min(560px,calc(100dvh-8rem))] w-[min(400px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-plaster-dark bg-plaster shadow-2xl shadow-ink/20"
         >
-          <div className="flex items-center gap-3 border-b border-cream-dark bg-basil px-4 py-3 text-cream">
-            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-cream/20 text-lg">
+          <div className="flex items-center gap-3 border-b border-plaster-dark bg-basil px-4 py-3 text-on-basil">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-on-basil/20 text-lg">
               🍝
             </div>
             <div>
@@ -133,7 +134,7 @@ export function ChatWidget() {
                 key={index}
                 className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
                   message.role === "user"
-                    ? "ml-auto bg-basil text-cream"
+                    ? "ml-auto bg-basil text-on-basil"
                     : "bg-white/80 text-ink"
                 }`}
               >
@@ -164,7 +165,7 @@ export function ChatWidget() {
                     key={suggestion}
                     type="button"
                     onClick={() => void send(suggestion)}
-                    className="rounded-full border border-cream-dark bg-white/70 px-3 py-1.5 text-xs text-ink-soft transition-colors hover:border-basil hover:text-basil"
+                    className="rounded-full border border-plaster-dark bg-shell px-3 py-1.5 text-xs text-ink-soft transition-colors hover:border-basil hover:text-basil"
                   >
                     {suggestion}
                   </button>
@@ -178,7 +179,7 @@ export function ChatWidget() {
               event.preventDefault();
               void send(input);
             }}
-            className="flex gap-2 border-t border-cream-dark bg-white/60 px-3 py-3"
+            className="flex gap-2 border-t border-plaster-dark bg-white/60 px-3 py-3"
           >
             <input
               ref={inputRef}
@@ -186,18 +187,18 @@ export function ChatWidget() {
               onChange={(event) => setInput(event.target.value)}
               maxLength={500}
               placeholder="Спросите про блюдо или доставку…"
-              className="flex-1 rounded-full border border-cream-dark bg-cream px-4 py-2.5 text-sm outline-none focus:border-basil"
+              className="flex-1 rounded-full border border-plaster-dark bg-plaster px-4 py-2.5 text-sm outline-none focus:border-basil"
             />
             <button
               type="submit"
               disabled={pending || !input.trim()}
-              className="rounded-full bg-terracotta px-4 py-2.5 text-sm font-semibold text-cream transition-opacity disabled:opacity-40"
+              className="rounded-full bg-terracotta px-4 py-2.5 text-sm font-semibold text-on-terracotta transition-opacity disabled:opacity-40"
             >
-              →
+              <ArrowRightIcon className="h-5 w-5" />
             </button>
           </form>
 
-          <p className="border-t border-cream-dark px-4 py-2 text-[11px] leading-snug text-ink-soft">
+          <p className="border-t border-plaster-dark px-4 py-2 text-[11px] leading-snug text-ink-soft">
             Отвечает ИИ и может ошибаться. Бронь столика и точные данные об аллергенах —{" "}
             <a className="underline" href={`tel:${RESTAURANT.phoneHref}`}>
               {RESTAURANT.phone}

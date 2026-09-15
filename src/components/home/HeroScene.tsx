@@ -4,10 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef } from "react";
 import { motion, useReducedMotion, useScroll, useTransform } from "motion/react";
-import { EASE } from "@/components/motion/Reveal";
+import { EASE } from "@/components/motion/Stagger";
 
 type HeroSceneProps = {
-  eyebrow: string;
   /** Заголовок построчно — каждая строка выезжает из-под собственной маски. */
   titleLines: string[];
   lead: string;
@@ -17,7 +16,7 @@ type HeroSceneProps = {
   image: string | null;
 };
 
-export function HeroScene({ eyebrow, titleLines, lead, phone, phoneHref, image }: HeroSceneProps) {
+export function HeroScene({ titleLines, lead, phone, phoneHref, image }: HeroSceneProps) {
   const runway = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
 
@@ -31,7 +30,7 @@ export function HeroScene({ eyebrow, titleLines, lead, phone, phoneHref, image }
   const mediaY = useTransform(scrollYProgress, [0, 1], ["0%", "-7%"]);
   // Затемнение растёт вместе с зумом: к приходу манифеста кадр уже глубокий фон, а не сюжет.
   const scrimOpacity = useTransform(scrollYProgress, [0, 0.6], [0.5, 0.88]);
-  // Текст обязан погаснуть раньше, чем снизу приедет манифест, иначе они накладываются.
+  // Текст обязан уйти раньше, чем снизу приедет манифест, иначе они накладываются.
   const contentY = useTransform(scrollYProgress, [0, 0.45], [0, 140]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
 
@@ -47,21 +46,12 @@ export function HeroScene({ eyebrow, titleLines, lead, phone, phoneHref, image }
       {/* data-dark — метка для шапки: пока эта секция под ней, шапка держится прозрачной. */}
       <div
         data-dark
-        className="sticky top-0 flex h-dvh flex-col overflow-hidden bg-basil-dark text-cream"
+        className="sticky top-0 flex h-dvh flex-col overflow-hidden bg-basil-dark text-on-basil"
       >
         <motion.div className="absolute inset-0" style={mediaStyle}>
           {/* База кадра. Работает и без фотографии — просто как тёмный вечерний зал. */}
           <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_50%_15%,#3a6b49_0%,#23472f_45%,#161f18_100%)]" />
-          {image && (
-            <Image
-              src={image}
-              alt=""
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-            />
-          )}
+          {image && <Image src={image} alt="" fill priority sizes="100vw" className="object-cover" />}
           <div className="noise absolute inset-0" />
         </motion.div>
 
@@ -72,68 +62,46 @@ export function HeroScene({ eyebrow, titleLines, lead, phone, phoneHref, image }
         />
 
         <motion.div
-          className="relative z-10 flex h-full flex-col justify-between px-4 sm:px-8"
+          className="relative z-10 flex h-full flex-col justify-end px-5 pb-10 pt-[calc(var(--header-h)+2rem)] sm:px-8 sm:pb-12"
           style={contentStyle}
         >
-          <motion.p
-            className="text-[10px] uppercase tracking-[0.2em] text-cream/70 sm:text-sm sm:tracking-[0.28em]"
-            style={{ paddingTop: "calc(var(--header-h) + 1.75rem)" }}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1, ease: EASE }}
-          >
-            {eyebrow}
-          </motion.p>
-
-          <div className="pb-8 sm:pb-12">
-            <h1 className="display text-[clamp(2.25rem,10.5vw,12rem)] font-normal leading-[0.92] tracking-[-0.02em]">
-              {titleLines.map((line, i) => (
-                <span key={line} className="block overflow-hidden pb-[0.06em]">
-                  <motion.span
-                    className="block"
-                    initial={{ y: "115%" }}
-                    animate={{ y: "0%" }}
-                    transition={{ duration: 1.05, delay: 0.18 + i * 0.11, ease: EASE }}
-                  >
-                    {line}
-                  </motion.span>
-                </span>
-              ))}
-            </h1>
-
-            <motion.div
-              className="mt-7 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between"
-              initial={{ opacity: 0, y: 18 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.55, ease: EASE }}
-            >
-              <p className="max-w-md text-sm leading-relaxed text-cream/80 sm:text-base">{lead}</p>
-
-              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-                <Link
-                  href="/menu"
-                  className="w-full rounded-full bg-cream px-7 py-3.5 text-center font-semibold text-basil-dark transition-transform duration-300 hover:scale-[1.03] hover:bg-white sm:w-auto"
+          <h1 className="display text-[clamp(2.25rem,10.5vw,12rem)] font-normal leading-[0.92] tracking-[-0.03em]">
+            {titleLines.map((line, i) => (
+              <span key={line} className="block overflow-hidden pb-[0.06em]">
+                <motion.span
+                  className="block"
+                  initial={{ y: "115%" }}
+                  animate={{ y: "0%" }}
+                  transition={{ duration: 1.05, delay: 0.12 + i * 0.11, ease: EASE }}
                 >
-                  Смотреть меню
-                </Link>
-                <a
-                  href={`tel:${phoneHref}`}
-                  className="w-full rounded-full border border-cream/45 px-7 py-3.5 text-center font-semibold text-cream transition-colors duration-300 hover:border-cream hover:bg-cream hover:text-basil-dark sm:w-auto"
-                >
-                  Забронировать стол
-                </a>
-              </div>
-            </motion.div>
+                  {line}
+                </motion.span>
+              </span>
+            ))}
+          </h1>
 
-            <motion.div
-              className="mt-8 flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-cream/50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.9, delay: 0.9 }}
-            >
-              <ScrollCue />
-              <span>{phone}</span>
-            </motion.div>
+          <div className="mt-7 flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
+            <p className="max-w-md text-sm leading-relaxed text-on-basil sm:text-base">{lead}</p>
+
+            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+              <Link
+                href="/menu"
+                className="w-full rounded-full bg-on-basil px-7 py-3.5 text-center font-semibold text-basil-dark transition-transform duration-300 hover:scale-[1.03] hover:bg-shell sm:w-auto"
+              >
+                Смотреть меню
+              </Link>
+              <a
+                href={`tel:${phoneHref}`}
+                className="w-full rounded-full border border-on-basil/45 px-7 py-3.5 text-center font-semibold text-on-basil transition-colors duration-300 hover:border-on-basil hover:bg-on-basil hover:text-basil-dark sm:w-auto"
+              >
+                Забронировать стол
+              </a>
+            </div>
+          </div>
+
+          <div className="mt-8 flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-on-basil-soft">
+            <ScrollCue />
+            <span>{phone}</span>
           </div>
         </motion.div>
       </div>
@@ -146,10 +114,10 @@ function ScrollCue() {
   const reduce = useReducedMotion();
 
   return (
-    <span className="relative h-px w-14 overflow-hidden bg-cream/25" aria-hidden>
+    <span className="relative h-px w-14 overflow-hidden bg-on-basil-soft/40" aria-hidden>
       {!reduce && (
         <motion.span
-          className="absolute inset-y-0 w-1/2 bg-cream"
+          className="absolute inset-y-0 w-1/2 bg-on-basil"
           initial={{ x: "-100%" }}
           animate={{ x: "200%" }}
           transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.4 }}

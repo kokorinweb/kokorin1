@@ -1,13 +1,31 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #fbf7f0;
-  --color-cream-dark: #f2ebe0;
+  /*
+   * Поверхность — известковая штукатурка с оливковым подтоном. Не «безопасный» кремовый:
+   * тёплый off-white стал рефлексом, а этот тон вырастает из зелени базилика на вывеске.
+   */
+  --color-plaster: #e8eadf;
+  --color-plaster-dark: #dbdfd0;
+  /* Карточки и поля ввода — тот же тон, только светлее страницы. */
+  --color-shell: #f3f5ec;
+
   --color-ink: #221d17;
   --color-ink-soft: #5c534a;
+
   --color-basil: #2f5d3f;
   --color-basil-dark: #23472f;
-  --color-terracotta: #b6482f;
+
+  /*
+   * Светлое на цветном тонируется от самого цвета. Нейтральный off-white поверх
+   * зелени читается как «серый по цвету» — тускло и как будто случайно.
+   * Вторичный тон держит контраст 4.5:1, проверено детектором.
+   */
+  --color-on-basil: #e9f2e4;
+  --color-on-basil-soft: #c1d4bb;
+  --color-on-terracotta: #fdeee6;
+
+  --color-terracotta: #a83f28;
   --color-terracotta-soft: #e8d3cb;
   --color-gold: #c8912f;
 
@@ -17,6 +35,8 @@
 
 :root {
   color-scheme: light;
+  /* Реальную высоту шапки пишет сам <Header> — герой уезжает под неё ровно на эту величину. */
+  --header-h: 4rem;
 }
 
 html {
@@ -24,17 +44,17 @@ html {
 }
 
 body {
-  background-color: var(--color-cream);
+  background-color: var(--color-plaster);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Тонкая «бумажная» текстура фона — дешевле картинки и не грузит сеть. */
+/* Тонкая «штукатурная» текстура фона — дешевле картинки и не грузит сеть. */
 .paper {
   background-image:
-    radial-gradient(circle at 15% 20%, rgba(182, 72, 47, 0.05), transparent 45%),
-    radial-gradient(circle at 85% 10%, rgba(47, 93, 63, 0.06), transparent 40%);
+    radial-gradient(circle at 15% 20%, rgba(168, 63, 40, 0.05), transparent 45%),
+    radial-gradient(circle at 85% 10%, rgba(47, 93, 63, 0.07), transparent 40%);
 }
 
 .display {
@@ -43,33 +63,28 @@ body {
   letter-spacing: -0.01em;
 }
 
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
-  }
+/*
+ * Поверхности, которые рисует браузер, а не мы. По умолчанию они не принадлежат
+ * ни одной палитре — выделение, каретка, фокус и подчёркивания заводим от своей.
+ */
+::selection {
+  background-color: var(--color-basil);
+  color: var(--color-plaster);
 }
 
-.rise {
-  animation: rise 0.28s ease-out both;
+body {
+  caret-color: var(--color-basil);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .rise {
-    animation: none;
-  }
-  html {
-    scroll-behavior: auto;
-  }
+:focus-visible {
+  outline: 2px solid var(--color-basil);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
-/* Реальную высоту шапки пишет сам <Header> — герой уезжает под неё ровно на эту величину. */
-:root {
-  --header-h: 4rem;
+a {
+  text-underline-offset: 0.18em;
+  text-decoration-thickness: from-font;
 }
 
 /* Плёночное зерно поверх героя: SVG-шум в data-URI, ноль запросов в сеть. */
@@ -104,5 +119,9 @@ body {
 
   .overlap-hero {
     margin-top: 0;
+  }
+
+  html {
+    scroll-behavior: auto;
   }
 }

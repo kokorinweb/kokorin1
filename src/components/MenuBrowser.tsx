@@ -29,6 +29,12 @@ export function MenuBrowser() {
     }
   }, [requested]);
 
+  // Заголовок раздела: и подпись к выборке, и недостающая ступень в иерархии заголовков.
+  const heading = useMemo(() => {
+    const found = CATEGORIES.find((c) => c.id === category);
+    return found ?? { title: "Всё меню", subtitle: "все разделы" };
+  }, [category]);
+
   const visible = useMemo(() => {
     return MENU.filter((item) => {
       if (category !== "all" && item.category !== category) return false;
@@ -62,10 +68,10 @@ export function MenuBrowser() {
             key={option.id}
             type="button"
             onClick={() => setDiet(option.id)}
-            className={`rounded-full px-3 py-1 transition-colors ${
+            className={`rounded-full px-4 py-3 transition-colors ${
               diet === option.id
-                ? "bg-terracotta text-cream"
-                : "bg-white/70 text-ink-soft hover:bg-cream-dark"
+                ? "bg-terracotta text-on-terracotta"
+                : "bg-shell text-ink-soft hover:bg-plaster-dark"
             }`}
           >
             {option.label}
@@ -73,12 +79,17 @@ export function MenuBrowser() {
         ))}
       </div>
 
-      <p className="mt-4 text-sm text-ink-soft">Найдено блюд: {visible.length}</p>
+      <div className="mt-8 flex flex-wrap items-baseline gap-x-4 gap-y-1 border-t border-plaster-dark pt-5">
+        <h2 className="display text-2xl">{heading.title}</h2>
+        <p className="text-sm text-ink-soft">
+          {heading.subtitle} · найдено блюд: {visible.length}
+        </p>
+      </div>
 
       {visible.length === 0 ? (
-        <p className="mt-10 rounded-2xl border border-dashed border-cream-dark p-10 text-center text-ink-soft">
+        <p className="mt-10 rounded-2xl border border-dashed border-plaster-dark p-10 text-center text-ink-soft">
           Под эти условия ничего не подошло. Снимите один из фильтров или спросите нашего
-          ИИ-помощника — он подберёт замену.
+          ИИ-помощника: он подберёт замену.
         </p>
       ) : (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -104,10 +115,10 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-4 py-2 text-sm font-medium transition-colors ${
+      className={`rounded-full border px-4 py-3 text-sm font-medium transition-colors ${
         active
-          ? "border-basil bg-basil text-cream"
-          : "border-cream-dark bg-white/70 text-ink hover:border-basil hover:text-basil"
+          ? "border-basil bg-basil text-on-basil"
+          : "border-plaster-dark bg-shell text-ink hover:border-basil hover:text-basil"
       }`}
     >
       {children}

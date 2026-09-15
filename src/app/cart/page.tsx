@@ -74,7 +74,7 @@ export default function CartPage() {
         </p>
         <Link
           href="/menu"
-          className="mt-8 inline-block rounded-full bg-basil px-7 py-3.5 font-semibold text-cream hover:bg-basil-dark"
+          className="mt-8 inline-block rounded-full bg-basil px-7 py-3.5 font-semibold text-on-basil hover:bg-basil-dark"
         >
           Вернуться в меню
         </Link>
@@ -95,7 +95,7 @@ export default function CartPage() {
         </p>
         <Link
           href="/menu"
-          className="mt-8 inline-block rounded-full bg-basil px-7 py-3.5 font-semibold text-cream hover:bg-basil-dark"
+          className="mt-8 inline-block rounded-full bg-basil px-7 py-3.5 font-semibold text-on-basil hover:bg-basil-dark"
         >
           Открыть меню
         </Link>
@@ -112,7 +112,7 @@ export default function CartPage() {
           {entries.map((entry) => (
             <li
               key={entry.item.id}
-              className="flex flex-wrap items-center gap-4 rounded-2xl border border-cream-dark bg-white/70 p-4"
+              className="flex flex-wrap items-center gap-4 rounded-2xl border border-plaster-dark bg-shell p-4"
             >
               <div className="min-w-40 flex-1">
                 <div className="display text-xl leading-tight">{entry.item.name}</div>
@@ -121,7 +121,7 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 rounded-full border border-cream-dark">
+              <div className="flex items-center gap-1 rounded-full border border-plaster-dark">
                 <QtyButton
                   label={`Уменьшить количество: ${entry.item.name}`}
                   onClick={() => setQuantity(entry.item.id, entry.quantity - 1)}
@@ -163,7 +163,7 @@ export default function CartPage() {
 
         <form
           onSubmit={submit}
-          className="h-fit rounded-2xl border border-cream-dark bg-white/70 p-6"
+          className="h-fit rounded-2xl border border-plaster-dark bg-shell p-6"
         >
           <div className="grid grid-cols-2 gap-2">
             <ModeButton
@@ -207,7 +207,7 @@ export default function CartPage() {
             />
           </div>
 
-          <dl className="mt-6 space-y-2 border-t border-cream-dark pt-5 text-sm">
+          <dl className="mt-6 space-y-2 border-t border-plaster-dark pt-5 text-sm">
             <Row term="Блюда" value={formatPrice(quote.subtotal)} />
             {quote.discount > 0 && (
               <Row
@@ -222,7 +222,7 @@ export default function CartPage() {
                 value={quote.deliveryFee === 0 ? "бесплатно" : formatPrice(quote.deliveryFee)}
               />
             )}
-            <div className="flex justify-between border-t border-cream-dark pt-3">
+            <div className="flex justify-between border-t border-plaster-dark pt-3">
               <dt className="display text-xl">Итого</dt>
               <dd className="display text-xl text-terracotta">{formatPrice(quote.total)}</dd>
             </div>
@@ -245,7 +245,7 @@ export default function CartPage() {
           <button
             type="submit"
             disabled={sending || belowMinimum}
-            className="mt-5 w-full rounded-full bg-basil px-6 py-3.5 font-semibold text-cream transition-colors hover:bg-basil-dark disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-5 w-full rounded-full bg-basil px-6 py-3.5 font-semibold text-on-basil transition-colors hover:bg-basil-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
             {sending ? "Отправляем…" : "Оформить заказ"}
           </button>
@@ -282,7 +282,7 @@ function QtyButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="h-9 w-9 rounded-full text-lg text-ink-soft transition-colors hover:bg-cream-dark hover:text-ink"
+      className="h-11 w-11 rounded-full text-lg text-ink-soft transition-colors hover:bg-plaster-dark hover:text-ink"
     >
       {children}
     </button>
@@ -303,7 +303,7 @@ function ModeButton({
       type="button"
       onClick={onClick}
       className={`rounded-xl px-3 py-3 text-sm font-semibold transition-colors ${
-        active ? "bg-basil text-cream" : "bg-cream-dark text-ink-soft hover:text-ink"
+        active ? "bg-basil text-on-basil" : "bg-plaster-dark text-ink-soft hover:text-ink"
       }`}
     >
       {children}
@@ -338,7 +338,7 @@ function Field({
         required={required}
         placeholder={placeholder}
         onChange={(event) => onChange(event.target.value)}
-        className="mt-1 w-full rounded-xl border border-cream-dark bg-cream px-4 py-2.5 outline-none focus:border-basil"
+        className="mt-1 w-full rounded-xl border border-plaster-dark bg-plaster px-4 py-2.5 outline-none focus:border-basil"
       />
     </label>
   );

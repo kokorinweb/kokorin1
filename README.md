@@ -61,10 +61,34 @@ curl "https://api.telegram.org/bot<TOKEN>/setWebhook?url=https://ваш-доме
 - Библиотека — [Motion](https://motion.dev) (`motion/react`). Чистого CSS не хватило:
   scroll-driven анимации до сих пор не умеет Firefox.
 - Системная настройка «уменьшить движение» уважается целиком: `MotionConfig reducedMotion="user"`
-  глушит трансформы, а медиазапрос в `globals.css` убирает разгон и перекрытие — иначе получилось
+  глушит трансформы, а медиазапрос в `globals.css` убирает разгон и перекрытие, иначе получилось
   бы два экрана пустоты без единого движения.
+- Появление блоков сделано сдвигом без прозрачности: блок с `opacity: 0` невидим для всех, у кого
+  не отработал JS.
 - Меню и оформление заказа намеренно не анимированы: там важна скорость, а не эффект.
 - Фон первого экрана работает без фотографии. Как подложить свою — в `public/README.md`.
+
+Правила палитры, типографики и движения зафиксированы в [DESIGN.md](DESIGN.md).
+
+## Проверка вёрстки
+
+В `.claude/skills/` лежат два установленных дизайн-скилла:
+
+| Скилл | Что даёт |
+| --- | --- |
+| [impeccable](https://github.com/pbakaus/impeccable) | 61 детерминированное правило вёрстки, гоняется CLI без ИИ и без ключей |
+| [ui-ux-pro-max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | Локальная база UX-правил, палитр, шрифтовых пар и пресетов движения |
+
+Детектор запускается по живому сайту:
+
+```bash
+npm run build && npm run start
+IMPECCABLE_BROWSER=$(which chromium) \
+  .claude/skills/impeccable/scripts/impeccable detect \
+  http://localhost:3000/ http://localhost:3000/menu http://localhost:3000/cart
+```
+
+Сейчас все страницы проходят с нулём срабатываний на 1280×800 и на 390×844.
 
 ## Безопасность и ИИ
 
