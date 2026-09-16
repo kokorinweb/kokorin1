@@ -35,9 +35,11 @@
   --tint:   #FEF1DC;
 
   /* шрифты */
-  --disp: "Nunito", "Trebuchet MS", system-ui, sans-serif;
-  --text: "Alegreya Sans", "Helvetica Neue", Arial, sans-serif;
-  --script: "Pacifico", "Brush Script MT", cursive;
+  /* Запасные гарнитуры подобраны так, чтобы страница не рассыпалась,
+     если Google Fonts не ответит: метрики близки, начертание того же тона. */
+  --disp: "Nunito", "Trebuchet MS", "Segoe UI", Roboto, system-ui, sans-serif;
+  --text: "Alegreya Sans", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --script: "Pacifico", "Segoe Script", "Bradley Hand", "Brush Script MT", "Comic Sans MS", cursive;
 
   /* шкала */
   --t-hero: clamp(2.8rem, 7.4vw, 6.4rem);
@@ -168,9 +170,7 @@ button{font:inherit;color:inherit}
   display:flex;align-items:center;gap:clamp(1rem,2.5vw,2.2rem);
   padding:.85rem var(--gut);
   padding-top:calc(.85rem + env(safe-area-inset-top, 0px));
-  background:color-mix(in srgb, var(--paper) 86%, transparent);
-  backdrop-filter:blur(14px) saturate(1.3);
-  -webkit-backdrop-filter:blur(14px) saturate(1.3);
+  background:color-mix(in srgb, var(--paper) 97%, transparent);
   border-bottom:1px solid var(--line);
   transition:transform .45s cubic-bezier(.2,.8,.2,1);
   will-change:transform;
@@ -216,8 +216,7 @@ button{font:inherit;color:inherit}
 /* ─────────── БАНКА ─────────── */
 
 .can{display:block;height:auto}
-.can__label{filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
-.can__label text{fill:#fff}
+.can__label text{fill:#fff;paint-order:stroke;stroke:rgba(0,0,0,.26);stroke-width:2.5px;stroke-linejoin:round}
 .can__label line{stroke:#fff;opacity:.55;stroke-width:1.6}
 .can__brand{font-family:var(--script);font-weight:400;font-size:40px}
 .can__flavor{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:.2em}
@@ -237,7 +236,7 @@ button{font:inherit;color:inherit}
 }
 .hero__bubbles{position:absolute;inset:0;width:100%;height:100%;opacity:.55;pointer-events:none}
 .hero__glow{
-  position:absolute;right:6%;top:18%;width:min(640px,58vw);aspect-ratio:1;pointer-events:none;
+  will-change:transform;position:absolute;right:6%;top:18%;width:min(640px,58vw);aspect-ratio:1;pointer-events:none;
   background:radial-gradient(circle, color-mix(in srgb, var(--flav) 34%, transparent) 0%, transparent 66%);
   transition:background .6s;
 }
@@ -253,7 +252,7 @@ button{font:inherit;color:inherit}
 }
 .hero__count b{font-family:var(--disp);font-weight:700;color:var(--ink)}
 .hero__countLine{display:block;width:clamp(48px,7vw,96px);height:2px;border-radius:2px;background:var(--line);overflow:hidden}
-.hero__countLine i{display:block;height:100%;width:20%;border-radius:2px;background:var(--flav);transition:width .5s cubic-bezier(.2,.8,.2,1), background-color .5s}
+.hero__countLine i{display:block;height:100%;width:100%;border-radius:2px;background:var(--flav);transform:scaleX(.2);transform-origin:0 50%;transition:transform .5s cubic-bezier(.2,.8,.2,1), background-color .5s}
 
 .hero__title{
   margin:0;font-family:var(--disp);font-weight:700;
@@ -283,12 +282,12 @@ button{font:inherit;color:inherit}
   width:44%;height:min(96%,640px);
   display:grid;place-items:center;
 }
-.hero__splash{position:absolute;width:92%;aspect-ratio:1;opacity:.5;animation:blob 16s ease-in-out infinite}
+.hero__splash{position:absolute;width:92%;aspect-ratio:1;opacity:.5;will-change:transform;animation:blob 16s ease-in-out infinite}
 .hero__splash svg{display:block;width:100%;height:100%}
 @keyframes blob{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(5deg) scale(1.05)}}
 .hero__can{position:relative;z-index:3;height:96%;aspect-ratio:26/56;width:auto;will-change:transform}
 .hero__can .can{height:100%;width:100%}
-.hero__fruit{position:absolute;z-index:2;pointer-events:none;filter:drop-shadow(0 10px 16px rgba(20,69,43,.22))}
+.hero__fruit{position:absolute;z-index:2;pointer-events:none;will-change:transform}
 .hero__fruit svg{display:block;width:100%;height:100%}
 .hero__fruit--1{width:clamp(56px,7vw,104px);left:4%;top:24%;animation:float 7s ease-in-out infinite}
 .hero__fruit--2{width:clamp(44px,5.4vw,80px);right:8%;top:12%;animation:float 9s ease-in-out infinite reverse}
@@ -343,7 +342,7 @@ button{font:inherit;color:inherit}
 .manifest__beat h2{margin:1rem 0 .6rem;font-family:var(--disp);font-weight:700;font-size:var(--t-1);line-height:1;letter-spacing:-.03em}
 .manifest__beat p{margin:0;max-width:46ch;font-size:var(--t-3);line-height:1.5;color:var(--muted)}
 .manifest__rail{position:absolute;left:clamp(2rem,4vw,3.5rem);right:clamp(2rem,4vw,3.5rem);bottom:clamp(1.6rem,3vw,2.4rem);height:4px;border-radius:99px;background:var(--mist-2)}
-.manifest__rail span{display:block;height:100%;width:0%;border-radius:99px;background:var(--leaf)}
+.manifest__rail span{display:block;height:100%;width:100%;border-radius:99px;background:var(--leaf);transform:scaleX(0);transform-origin:0 50%}
 
 /* ─────────── ВКУСЫ ─────────── */
 
@@ -371,7 +370,7 @@ button{font:inherit;color:inherit}
 .flav__halo{position:absolute;width:88%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle, var(--tint) 0%, transparent 68%)}
 .flav__halo::after{content:"";position:absolute;inset:18%;border-radius:50%;background:color-mix(in srgb, var(--flav) 18%, #fff)}
 .flav__art .can{position:relative;z-index:3;height:clamp(230px,40vh,420px);width:auto}
-.flav__fruit{position:absolute;z-index:2;filter:drop-shadow(0 8px 14px rgba(20,69,43,.2))}
+.flav__fruit{position:absolute;z-index:2}
 .flav__fruit svg{display:block;width:100%;height:100%}
 .flav__fruit--a{width:clamp(52px,6vw,88px);left:6%;bottom:16%}
 .flav__fruit--b{width:clamp(40px,4.6vw,66px);right:8%;top:12%}
@@ -625,6 +624,7 @@ button{font:inherit;color:inherit}
 .foot__plain{display:block;padding:.6rem 0 0;font-size:.9rem;color:rgba(255,255,255,.5)}
 .foot__legal{margin:clamp(2.2rem,4vw,3.4rem) 0 0;padding-top:1.4rem;border-top:1px solid rgba(255,255,255,.14);font-size:.8rem;line-height:1.55;color:rgba(255,255,255,.42);max-width:80ch}
 .foot__mark{
+  will-change:transform;
   margin-top:clamp(1rem,3vw,2rem);font-family:var(--script);font-weight:400;
   font-size:clamp(4rem,21vw,17rem);line-height:.78;letter-spacing:-.045em;
   text-align:center;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.18);user-select:none;
@@ -689,6 +689,7 @@ button{font:inherit;color:inherit}
     transition-duration:.001ms !important;scroll-behavior:auto !important;
   }
   .preloader{display:none}
+  .hero__fruit,.hero__splash,.hero__can,.manifest__can,.marquee__track,.flavors__track,.head,.hero__glow,.foot__mark{will-change:auto}
   .manifest__stage{min-height:0}
   .manifest__beat{position:static;opacity:1;pointer-events:auto;margin-bottom:2.2rem}
   .manifest__beats{min-height:0}

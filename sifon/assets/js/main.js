@@ -96,7 +96,7 @@
       heroSection.style.setProperty('--tint', s.tint);
     }
     if (heroNum) heroNum.textContent = '0' + (i + 1);
-    if (heroNumBar) heroNumBar.style.width = ((i + 1) / SLIDES.length * 100) + '%';
+    if (heroNumBar) heroNumBar.style.transform = 'scaleX(' + ((i + 1) / SLIDES.length).toFixed(3) + ')';
     if (canFlavor) canFlavor.textContent = s.cap;
     if (fruitA) fruitA.setAttribute('href', '#' + s.fruit);
     if (fruitC) fruitC.setAttribute('href', '#' + SLIDES[(i + 1) % SLIDES.length].fruit);
@@ -190,11 +190,16 @@
   var lastY = 0;
   var nativeProgress = !reduced && CSS.supports && CSS.supports('animation-timeline: scroll()');
 
+  var maxScroll = 0;
+  function measureScroll() { maxScroll = document.documentElement.scrollHeight - window.innerHeight; }
+  measureScroll();
+  window.addEventListener('resize', measureScroll);
+  if (hasGSAP && window.ScrollTrigger) ScrollTrigger.addEventListener('refresh', measureScroll);
+
   function onScrollHead() {
     var y = window.scrollY || document.documentElement.scrollTop;
     if (progress && !nativeProgress) {
-      var max = document.documentElement.scrollHeight - window.innerHeight;
-      progress.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
+      progress.style.transform = 'scaleX(' + (maxScroll > 0 ? y / maxScroll : 0) + ')';
     }
     if (head) {
       if (y > 260 && y > lastY + 4) head.classList.add('is-hidden');
@@ -227,7 +232,7 @@
   var canvas = $('#bubbles');
   if (canvas && !reduced) {
     var ctx = canvas.getContext('2d');
-    var bubbles = [], raf = null, W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var bubbles = [], raf = null, W = 0, H = 0, dpr = 1;
 
     function flavRGB() {
       var hex = (SLIDES[slide].flav || '#F2901E').replace('#', '');
@@ -238,7 +243,7 @@
       W = r.width; H = r.height;
       canvas.width = W * dpr; canvas.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var n = Math.round(Math.min(60, W / 26));
+      var n = Math.round(Math.min(38, W / 34));
       bubbles = [];
       for (var i = 0; i < n; i++) bubbles.push(newBubble(true));
     }
@@ -263,13 +268,20 @@
       }
       raf = requestAnimationFrame(draw);
     }
+    var onScreen = true;
+    function start() { if (!raf && onScreen && !document.hidden) draw(); }
+    function stop() { if (raf) { cancelAnimationFrame(raf); raf = null; } }
+
     sizeCanvas();
-    draw();
+    start();
     window.addEventListener('resize', sizeCanvas);
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) { cancelAnimationFrame(raf); raf = null; }
-      else if (!raf) draw();
-    });
+    document.addEventListener('visibilitychange', function () { document.hidden ? stop() : start(); });
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (es) {
+        onScreen = es[0].isIntersecting;
+        onScreen ? start() : stop();
+      }, { rootMargin: '120px' }).observe(canvas);
+    }
   }
 
   /* ---------- 7. Банка в герое: наклон и параллакс ---------- */
@@ -311,6 +323,7 @@
 
   var beats = $$('.manifest__beat');
   var mCan = $('#manifestCan');
+  var mSet = mCan && hasGSAP ? gsap.quickSetter(mCan, 'css') : null;
   var mRail = $('#manifestRail');
   var curBeat = 0;
 
@@ -341,9 +354,9 @@
       pin: true, scrub: true, invalidateOnRefresh: true,
       onUpdate: function (self) {
         var p = self.progress;
-        if (mRail) mRail.style.width = (p * 100).toFixed(2) + '%';
+        if (mRail) mRail.style.transform = 'scaleX(' + p.toFixed(4) + ')';
         setBeat(Math.min(beats.length - 1, Math.floor(p * beats.length * 0.999)));
-        if (mCan) gsap.set(mCan, { rotate: -10 + p * 20, yPercent: -6 + p * 12, scale: .92 + p * .14 });
+        if (mSet) mSet({ rotate: -10 + p * 20, yPercent: -6 + p * 12, scale: .92 + p * .14 });
       }
     });
   }
@@ -525,6 +538,12 @@
 
   /* ---------- 15. Аккордеон вопросов ---------- */
 
+  var refreshT = null;
+  function refreshSoon() {
+    clearTimeout(refreshT);
+    refreshT = setTimeout(function () { ScrollTrigger.refresh(); }, 220);
+  }
+
   $$('.qa').forEach(function (qa) {
     var body = $('.qa__body', qa), summary = $('summary', qa);
     if (!body || !summary || !hasGSAP || reduced) return;
@@ -533,11 +552,11 @@
       e.preventDefault();
       if (qa.hasAttribute('open')) {
         gsap.to(body, { height: 0, duration: .35, ease: 'power2.inOut',
-          onComplete: function () { qa.removeAttribute('open'); ScrollTrigger.refresh(); } });
+          onComplete: function () { qa.removeAttribute('open'); refreshSoon(); } });
       } else {
         qa.setAttribute('open', '');
         gsap.fromTo(body, { height: 0 }, { height: 'auto', duration: .4, ease: 'power2.out',
-          onComplete: function () { ScrollTrigger.refresh(); } });
+          onComplete: refreshSoon });
       }
     });
   });
