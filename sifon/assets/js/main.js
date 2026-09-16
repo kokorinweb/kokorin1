@@ -1,8 +1,8 @@
 /* =============================================================
-   СИФОН — сценарий страницы
-   Всё движение собрано здесь: прелоадер, инерционный скролл,
-   пиннинг манифеста, горизонтальная лента вкусов, автомат.
-   При prefers-reduced-motion вся хореография выключается,
+   ДОЛЬКА — сценарий страницы
+   Вся хореография собрана здесь: прелоадер, инерционный скролл,
+   слайдер вкусов в герое, пиннинг манифеста, горизонтальная лента,
+   соковыжималка. При prefers-reduced-motion движение выключается,
    а страница остаётся полностью читаемой и рабочей.
    ============================================================= */
 (function () {
@@ -15,11 +15,20 @@
 
   if (hasGSAP && window.ScrollTrigger) gsap.registerPlugin(ScrollTrigger);
 
+  /* Линейка вкусов — один источник правды для героя, банки и пузырьков. */
+  var SLIDES = [
+    { a: 'Яркий.',  b: 'Цитрус',   flav: '#F2901E', tint: '#FEF1DC', fruit: 'f-orange', cap: 'ЦИТРУС' },
+    { a: 'Свежий.', b: 'Киви',     flav: '#5BA83C', tint: '#E9F4E0', fruit: 'f-kiwi',   cap: 'КИВИ' },
+    { a: 'Спелая.', b: 'Ягода',    flav: '#E0507A', tint: '#FCE7EE', fruit: 'f-berry',  cap: 'ЯГОДА' },
+    { a: 'Тёмный.', b: 'Виноград', flav: '#7B4FA8', tint: '#EFE7F7', fruit: 'f-grape',  cap: 'ВИНОГРАД' },
+    { a: 'Жаркий.', b: 'Тропик',   flav: '#EFA81B', tint: '#FDF0D3', fruit: 'f-mango',  cap: 'ТРОПИК' }
+  ];
+
   /* ---------- 1. Инерционный скролл ---------- */
 
   var lenis = null;
   if (!reduced && typeof window.Lenis !== 'undefined' && hasGSAP) {
-    lenis = new Lenis({ lerp: 0.09, wheelMultiplier: 1, smoothWheel: true });
+    lenis = new Lenis({ lerp: 0.09, smoothWheel: true });
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add(function (t) { lenis.raf(t * 1000); });
     gsap.ticker.lagSmoothing(0);
@@ -64,24 +73,86 @@
   var heroChars = [];
   $$('[data-split]').forEach(function (el) {
     var chars = splitChars(el);
-    if (el.classList.contains('hero__title')) heroChars = chars;
+    if (el.closest('.hero__title')) heroChars = heroChars.concat(chars);
   });
 
-  /* ---------- 3. Прелоадер ---------- */
+  /* ---------- 3. Слайдер вкусов в герое ---------- */
+
+  var heroSection = $('#hero');
+  var heroBlock   = $('.hero__block');
+  var titleA = $('.hero__titleA'), titleB = $('.hero__titleB');
+  var heroNum = $('#heroNum'), heroNumBar = $('#heroNumBar');
+  var canFlavor = $('#canFlavor');
+  var dots = $$('.dot');
+  var fruitA = $('.hero__fruit--1 use'), fruitC = $('.hero__fruit--3 use');
+  var slide = 0, slideTimer = null;
+
+  function paintSlide(i) {
+    var s = SLIDES[i];
+    if (heroSection) {
+      heroSection.style.setProperty('--flav', s.flav);
+      heroSection.style.setProperty('--tint', s.tint);
+    }
+    if (heroNum) heroNum.textContent = '0' + (i + 1);
+    if (heroNumBar) heroNumBar.style.width = ((i + 1) / SLIDES.length * 100) + '%';
+    if (canFlavor) canFlavor.textContent = s.cap;
+    if (fruitA) fruitA.setAttribute('href', '#' + s.fruit);
+    if (fruitC) fruitC.setAttribute('href', '#' + (i % 2 ? 'f-berry' : 'f-orange'));
+    dots.forEach(function (d, n) {
+      d.classList.toggle('is-on', n === i);
+      d.setAttribute('aria-selected', String(n === i));
+    });
+  }
+
+  function setSlide(i, animate) {
+    i = (i + SLIDES.length) % SLIDES.length;
+    slide = i;
+    var s = SLIDES[i];
+    paintSlide(i);
+    if (!titleA || !titleB) return;
+    titleA.textContent = s.a;
+    titleB.textContent = s.b;
+    var chars = splitChars(titleA).concat(splitChars(titleB));
+    if (animate && hasGSAP && !reduced) {
+      gsap.from(chars, { yPercent: 70, opacity: 0, duration: .6, stagger: .028, ease: 'expo.out' });
+    }
+  }
+
+  function startSlides() {
+    if (reduced || slideTimer) return;
+    slideTimer = setInterval(function () { setSlide(slide + 1, true); }, 6200);
+  }
+  function stopSlides() { clearInterval(slideTimer); slideTimer = null; }
+
+  dots.forEach(function (d) {
+    d.addEventListener('click', function () {
+      stopSlides();
+      setSlide(Number(d.dataset.slide), true);
+      startSlides();
+    });
+  });
+  if (heroBlock) {
+    heroBlock.addEventListener('pointerenter', stopSlides);
+    heroBlock.addEventListener('pointerleave', startSlides);
+    heroBlock.addEventListener('focusin', stopSlides);
+  }
+  paintSlide(0);
+
+  /* ---------- 4. Прелоадер ---------- */
 
   var head = $('#head'), progress = $('#headProgress');
   if (head && !reduced) head.classList.add('is-intro');
   var preloader = $('#preloader');
 
   function runIntro() {
-    if (!hasGSAP || reduced) return;
-    var tl = gsap.timeline({ defaults: { ease: 'expo.out' } });
-    tl.from(heroChars, { yPercent: 118, duration: 1.1, stagger: 0.055 }, 0)
-      .from('.hero__bottle', { y: 90, opacity: 0, duration: 1.2 }, 0.15)
-      .from('.hero__eyebrow, .hero__aside > *', { y: 22, opacity: 0, duration: .8, stagger: .08 }, 0.4)
-      .from('.marquee--hero', { yPercent: 100, duration: .9 }, 0.35);
-    /* шапка выезжает своим CSS-переходом: смешивать её класс-transform с твином нельзя */
+    if (!hasGSAP || reduced) { startSlides(); return; }
+    gsap.timeline({ defaults: { ease: 'expo.out' } })
+      .from(heroChars, { yPercent: 110, opacity: 0, duration: 1, stagger: .03 }, 0)
+      .from('.hero__stage', { y: 60, opacity: 0, duration: 1.1 }, .1)
+      .from('.hero__count, .hero__aside > *, .hero__dots', { y: 22, opacity: 0, duration: .7, stagger: .07 }, .35)
+      .from('.marquee--hero', { opacity: 0, duration: .6 }, .5);
     if (head) gsap.delayedCall(.25, function () { head.classList.remove('is-intro'); });
+    gsap.delayedCall(1.6, startSlides);
   }
 
   function killPreloader() {
@@ -96,8 +167,7 @@
   }
 
   if (preloader && !reduced && hasGSAP) {
-    var num = $('#preloaderNum'), fill = $('#preloaderFill');
-    var counter = { v: 0 };
+    var num = $('#preloaderNum'), fill = $('#preloaderFill'), counter = { v: 0 };
     gsap.to(counter, {
       v: 100, duration: 1.15, ease: 'power2.inOut',
       onUpdate: function () {
@@ -112,14 +182,17 @@
     runIntro();
   }
 
-  /* ---------- 4. Шапка ---------- */
+  /* ---------- 5. Шапка ---------- */
 
   var lastY = 0;
+  var nativeProgress = !reduced && CSS.supports && CSS.supports('animation-timeline: scroll()');
 
   function onScrollHead() {
     var y = window.scrollY || document.documentElement.scrollTop;
-    var max = document.documentElement.scrollHeight - window.innerHeight;
-    if (progress) progress.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
+    if (progress && !nativeProgress) {
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      progress.style.transform = 'scaleX(' + (max > 0 ? y / max : 0) + ')';
+    }
     if (head) {
       if (y > 260 && y > lastY + 4) head.classList.add('is-hidden');
       else if (y < lastY - 4 || y < 120) head.classList.remove('is-hidden');
@@ -146,41 +219,42 @@
     });
   }
 
-  /* ---------- 5. Пузырьки в герое ---------- */
+  /* ---------- 6. Пузырьки газа в герое ---------- */
 
   var canvas = $('#bubbles');
   if (canvas && !reduced) {
     var ctx = canvas.getContext('2d');
     var bubbles = [], raf = null, W = 0, H = 0, dpr = Math.min(window.devicePixelRatio || 1, 2);
 
+    function flavRGB() {
+      var hex = (SLIDES[slide].flav || '#F2901E').replace('#', '');
+      return [parseInt(hex.slice(0, 2), 16), parseInt(hex.slice(2, 4), 16), parseInt(hex.slice(4, 6), 16)];
+    }
     function sizeCanvas() {
       var r = canvas.getBoundingClientRect();
       W = r.width; H = r.height;
       canvas.width = W * dpr; canvas.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var n = Math.round(Math.min(70, W / 22));
+      var n = Math.round(Math.min(60, W / 26));
       bubbles = [];
       for (var i = 0; i < n; i++) bubbles.push(newBubble(true));
     }
     function newBubble(anywhere) {
       return {
-        x: Math.random() * W,
-        y: anywhere ? Math.random() * H : H + 20,
-        r: 1.5 + Math.random() * 5,
-        s: 0.25 + Math.random() * 0.9,
-        a: 0.12 + Math.random() * 0.4,
-        w: Math.random() * Math.PI * 2
+        x: Math.random() * W, y: anywhere ? Math.random() * H : H + 20,
+        r: 3 + Math.random() * 12, s: .18 + Math.random() * .6,
+        a: .07 + Math.random() * .16, w: Math.random() * Math.PI * 2
       };
     }
     function draw() {
       ctx.clearRect(0, 0, W, H);
+      var c = flavRGB();
       for (var i = 0; i < bubbles.length; i++) {
         var b = bubbles[i];
-        b.y -= b.s; b.w += 0.02;
-        var x = b.x + Math.sin(b.w) * 9;
+        b.y -= b.s; b.w += .018;
         ctx.beginPath();
-        ctx.arc(x, b.y, b.r, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(241,231,208,' + b.a + ')';
+        ctx.arc(b.x + Math.sin(b.w) * 10, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + b.a + ')';
         ctx.fill();
         if (b.y + b.r < -10) bubbles[i] = newBubble(false);
       }
@@ -195,46 +269,45 @@
     });
   }
 
-  /* ---------- 6. Бутылка в герое: наклон и параллакс ---------- */
+  /* ---------- 7. Банка в герое: наклон и параллакс ---------- */
 
-  var heroBottle = $('#heroBottle');
-  if (heroBottle && hasGSAP && !reduced) {
-    gsap.to(heroBottle, {
-      y: -70, rotate: 5, scale: .9, ease: 'none',
+  var heroCan = $('#heroCan');
+  if (heroCan && hasGSAP && !reduced) {
+    gsap.to(heroCan, {
+      y: -60, rotate: 4, scale: .94, ease: 'none',
       scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: .6 }
     });
-    if (window.matchMedia('(pointer:fine)').matches) {
-      var tiltX = gsap.quickTo(heroBottle, 'rotateY', { duration: .7, ease: 'power3' });
-      var tiltY = gsap.quickTo(heroBottle, 'rotateX', { duration: .7, ease: 'power3' });
-      gsap.set(heroBottle, { transformPerspective: 900 });
-      $('.hero').addEventListener('pointermove', function (e) {
+    if (window.matchMedia('(pointer:fine)').matches && heroBlock) {
+      var tiltX = gsap.quickTo(heroCan, 'rotateY', { duration: .7, ease: 'power3' });
+      var tiltY = gsap.quickTo(heroCan, 'rotateX', { duration: .7, ease: 'power3' });
+      gsap.set(heroCan, { transformPerspective: 900 });
+      heroBlock.addEventListener('pointermove', function (e) {
         var r = this.getBoundingClientRect();
         tiltX(((e.clientX - r.left) / r.width - .5) * 16);
-        tiltY((((e.clientY - r.top) / r.height - .5) * -12));
+        tiltY(((e.clientY - r.top) / r.height - .5) * -12);
       });
     }
     gsap.to('.hero__glow', {
-      yPercent: 16, ease: 'none',
+      yPercent: 14, ease: 'none',
       scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: true }
     });
   }
 
-  /* ---------- 7. Бегущие строки ---------- */
+  /* ---------- 8. Бегущие строки ---------- */
 
   $$('[data-marquee]').forEach(function (track) {
     track.innerHTML = track.innerHTML + track.innerHTML;
     if (!hasGSAP || reduced) return;
     var dir = Number(track.dataset.dir || 1);
-    var slow = track.closest('.marquee--says');
-    var dur = slow ? 52 : 28;
+    var dur = track.closest('.marquee--says') ? 52 : 30;
     if (dir > 0) gsap.fromTo(track, { xPercent: 0 }, { xPercent: -50, duration: dur, ease: 'none', repeat: -1 });
     else gsap.fromTo(track, { xPercent: -50 }, { xPercent: 0, duration: dur, ease: 'none', repeat: -1 });
   });
 
-  /* ---------- 8. Манифест: пин + скраб ---------- */
+  /* ---------- 9. Манифест: пин + скраб ---------- */
 
   var beats = $$('.manifest__beat');
-  var mBottle = $('#manifestBottle');
+  var mCan = $('#manifestCan');
   var mRail = $('#manifestRail');
   var curBeat = 0;
 
@@ -261,68 +334,48 @@
 
   if (beats.length && hasGSAP && !reduced) {
     ScrollTrigger.create({
-      trigger: '.manifest__stage',
-      start: 'top top',
-      end: '+=260%',
-      pin: true,
-      scrub: true,
-      invalidateOnRefresh: true,
+      trigger: '.manifest__stage', start: 'top top', end: '+=260%',
+      pin: true, scrub: true, invalidateOnRefresh: true,
       onUpdate: function (self) {
         var p = self.progress;
         if (mRail) mRail.style.width = (p * 100).toFixed(2) + '%';
         setBeat(Math.min(beats.length - 1, Math.floor(p * beats.length * 0.999)));
-        if (mBottle) {
-          gsap.set(mBottle, {
-            rotate: -14 + p * 28,
-            yPercent: -8 + p * 16,
-            scale: 0.9 + p * 0.18
-          });
-        }
+        if (mCan) gsap.set(mCan, { rotate: -10 + p * 20, yPercent: -6 + p * 12, scale: .92 + p * .14 });
       }
     });
   }
 
-  /* ---------- 9. Вкусы: горизонтальная лента ---------- */
+  /* ---------- 10. Вкусы: горизонтальная лента ---------- */
 
   var fTrack = $('#flavorsTrack');
   var fSection = $('.flavors');
   var panels = fTrack ? $$('.flav', fTrack) : [];
 
   if (fTrack && panels.length && hasGSAP && !reduced) {
-    var colors = panels.map(function (p) { return p.style.getPropertyValue('--flav').trim() || '#2E8B57'; });
+    var tints = panels.map(function (p) { return p.style.getPropertyValue('--tint').trim() || '#FEF1DC'; });
     var curFlav = -1;
-
-    var distance = function () {
-      return Math.max(0, fTrack.scrollWidth - window.innerWidth);
-    };
+    var distance = function () { return Math.max(0, fTrack.scrollWidth - window.innerWidth); };
 
     gsap.to(fTrack, {
       x: function () { return -distance(); },
       ease: 'none',
       scrollTrigger: {
-        trigger: '#flavorsPin',
-        start: 'top top',
+        trigger: '#flavorsPin', start: 'top top',
         end: function () { return '+=' + (distance() + window.innerHeight * 0.5); },
-        pin: true,
-        scrub: 0.8,
-        invalidateOnRefresh: true,
+        pin: true, scrub: 0.8, invalidateOnRefresh: true,
         onUpdate: function (self) {
           var i = Math.min(panels.length - 1, Math.round(self.progress * (panels.length - 1)));
-          if (i !== curFlav) {
-            curFlav = i;
-            fSection.style.setProperty('--flav', colors[i]);
-          }
+          if (i !== curFlav) { curFlav = i; fSection.style.setProperty('--tint', tints[i]); }
         }
       }
     });
-    fSection.style.setProperty('--flav', colors[0]);
+    fSection.style.setProperty('--tint', tints[0]);
   }
 
-  /* ---------- 10. Счётчики фактов ---------- */
+  /* ---------- 11. Счётчики фактов ---------- */
 
   function formatNum(v, dec) {
-    var s = dec ? v.toFixed(dec) : String(Math.round(v));
-    return s.replace('.', ',');
+    return (dec ? v.toFixed(dec) : String(Math.round(v))).replace('.', ',');
   }
 
   $$('.fact__val').forEach(function (el) {
@@ -339,24 +392,18 @@
     });
   });
 
-  /* ---------- 11. Автомат газированной воды ---------- */
+  /* ---------- 12. Соковыжималка ---------- */
 
-  (function machine() {
+  (function juicer() {
     var unit = $('.mach__body');
     if (!unit) return;
-    var status = $('#machStatus');
-    var lamp = $('#machLamp');
-    var coin = $('#coin');
-    var go = $('#machGo');
-    var jet = $('#machJet');
-    var liquid = $('#glassLiquid');
+    var status = $('#machStatus'), lamp = $('#machLamp'), go = $('#machGo');
+    var jet = $('#machJet'), liquid = $('#glassLiquid');
     var syrups = $$('.syr');
-    var paid = false, busy = false;
-    var current = { name: 'Тархун', color: '#2E8B57' };
+    var busy = false;
+    var current = { name: 'Цитрус', color: '#F2901E' };
 
     function say(t) { if (status) status.textContent = t; }
-
-    function price() { return current.name === 'Без сиропа' ? '1 КОПЕЙКА' : '3 КОПЕЙКИ'; }
 
     syrups.forEach(function (b) {
       b.addEventListener('click', function () {
@@ -365,57 +412,45 @@
         b.classList.add('is-on'); b.setAttribute('aria-pressed', 'true');
         current = { name: b.dataset.syrup, color: b.dataset.color };
         unit.style.setProperty('--flav', current.color);
-        say(paid ? 'СИРОП: ' + current.name.toUpperCase() : 'ОПУСТИТЕ МОНЕТУ');
+        say(current.name + ' выбран. Жмите «Налить»');
       });
     });
     unit.style.setProperty('--flav', current.color);
 
-    if (coin) coin.addEventListener('click', function () {
-      if (paid || busy) return;
-      paid = true;
-      coin.classList.add('is-spent');
-      if (lamp) lamp.classList.add('is-on');
-      if (go) go.disabled = false;
-      say('ПРИНЯТО · ' + price() + ' · НАЖМИТЕ «НАЛИТЬ»');
-    });
-
     if (go) go.addEventListener('click', function () {
-      if (!paid || busy) return;
+      if (busy) return;
       busy = true; go.disabled = true;
-      say('НАЛИВАЕТСЯ ' + current.name.toUpperCase());
+      if (lamp) lamp.classList.add('is-on');
+      say('Наливается: ' + current.name);
 
       if (!hasGSAP || reduced) {
-        if (liquid) liquid.style.height = '78%';
-        if (jet) jet.style.height = '0px';
+        if (liquid) liquid.style.height = '76%';
         done();
         return;
       }
-      var tl = gsap.timeline({ onComplete: done });
-      tl.to(jet, { height: 74, duration: .2, ease: 'power2.out' })
-        .to(liquid, { height: '78%', duration: 1.5, ease: 'power1.inOut' }, 0)
+      gsap.timeline({ onComplete: done })
+        .to(jet, { height: 66, duration: .2, ease: 'power2.out' })
+        .to(liquid, { height: '76%', duration: 1.5, ease: 'power1.inOut' }, 0)
         .to(jet, { height: 0, duration: .18, ease: 'power2.in' }, '-=0.12')
         .fromTo('.glass', { y: 0 }, { y: -3, duration: .09, repeat: 3, yoyo: true }, '-=0.3');
 
       function done() {
-        say('ГОТОВО · СДАЧИ НЕТ');
-        setTimeout(reset, 3600);
+        say('Готово: ' + current.name + ', 0,33 л');
+        setTimeout(reset, 3400);
       }
     });
 
     function reset() {
-      if (!hasGSAP || reduced) {
-        if (liquid) liquid.style.height = '0%';
-      } else {
-        gsap.to(liquid, { height: '0%', duration: .7, ease: 'power2.in' });
-      }
+      if (!hasGSAP || reduced) { if (liquid) liquid.style.height = '0%'; }
+      else gsap.to(liquid, { height: '0%', duration: .7, ease: 'power2.in' });
       if (lamp) lamp.classList.remove('is-on');
-      if (coin) coin.classList.remove('is-spent');
-      paid = false; busy = false;
-      say('ОПУСТИТЕ МОНЕТУ');
+      if (go) go.disabled = false;
+      busy = false;
+      say('Выберите фрукт');
     }
   })();
 
-  /* ---------- 12. Обратный отсчёт ---------- */
+  /* ---------- 13. Обратный отсчёт ---------- */
 
   (function countdown() {
     var box = $('#countdown');
@@ -424,15 +459,13 @@
       d: $('[data-cd="d"]', box), h: $('[data-cd="h"]', box),
       m: $('[data-cd="m"]', box), s: $('[data-cd="s"]', box)
     };
-    var now = new Date();
-    var year = now.getFullYear();
+    var now = new Date(), year = now.getFullYear();
     var target = new Date(year, 11, 31, 23, 59, 59);
     if (target <= now) target = new Date(year + 1, 11, 31, 23, 59, 59);
 
     function pad(n) { return n < 10 ? '0' + n : String(n); }
     function tick() {
-      var diff = Math.max(0, target - new Date());
-      var s = Math.floor(diff / 1000);
+      var s = Math.floor(Math.max(0, target - new Date()) / 1000);
       cells.d.textContent = pad(Math.floor(s / 86400));
       cells.h.textContent = pad(Math.floor(s % 86400 / 3600));
       cells.m.textContent = pad(Math.floor(s % 3600 / 60));
@@ -442,21 +475,20 @@
     setInterval(tick, 1000);
   })();
 
-  /* ---------- 13. Форма кода и подписка ---------- */
+  /* ---------- 14. Формы ---------- */
 
   var codeform = $('#codeform');
   if (codeform) {
     var input = $('#code'), msg = $('#codemsg');
     input.addEventListener('input', function () {
       this.value = this.value.toUpperCase().replace(/[^A-Z0-9-]/g, '');
-      msg.textContent = '';
-      msg.className = 'codeform__msg';
+      msg.textContent = ''; msg.className = 'codeform__msg';
     });
     codeform.addEventListener('submit', function (e) {
       e.preventDefault();
       var raw = input.value.replace(/-/g, '');
       if (raw.length !== 6) {
-        msg.textContent = 'В коде шесть знаков, сейчас ' + raw.length + '. Проверьте крышку.';
+        msg.textContent = 'В коде шесть знаков, сейчас ' + raw.length + '. Проверьте язычок.';
         msg.className = 'codeform__msg is-err';
         if (hasGSAP && !reduced) gsap.fromTo(input, { x: -7 }, { x: 0, duration: .5, ease: 'elastic.out(1,0.3)' });
         return;
@@ -472,28 +504,31 @@
   if (sub) {
     sub.addEventListener('submit', function (e) {
       e.preventDefault();
-      var mail = $('#mail'), m = $('#submsg');
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(mail.value.trim())) {
-        m.textContent = 'Похоже, в адресе опечатка.';
-        return;
+      var nameEl = $('#subname'), telEl = $('#subtel'), m = $('#submsg');
+      var digits = telEl.value.replace(/\D/g, '');
+      if (!nameEl.value.trim()) {
+        m.textContent = 'Напишите имя — иначе не будем знать, к кому обращаться.';
+        m.className = 'sub__msg is-err'; nameEl.focus(); return;
       }
-      m.textContent = 'Записали. Напишем один раз — когда шестой сироп поедет в розлив.';
-      mail.value = '';
+      if (digits.length < 10) {
+        m.textContent = 'В номере не хватает цифр: нужно минимум десять.';
+        m.className = 'sub__msg is-err'; telEl.focus(); return;
+      }
+      m.textContent = 'Заявка принята. Перезвоним в рабочее время, обычно в тот же день.';
+      m.className = 'sub__msg';
+      sub.reset();
     });
   }
 
-  /* ---------- 14. Аккордеон вопросов ---------- */
+  /* ---------- 15. Аккордеон вопросов ---------- */
 
   $$('.qa').forEach(function (qa) {
-    var body = $('.qa__body', qa);
-    var summary = $('summary', qa);
-    if (!body || !summary) return;
-    if (!hasGSAP || reduced) return;
+    var body = $('.qa__body', qa), summary = $('summary', qa);
+    if (!body || !summary || !hasGSAP || reduced) return;
     body.style.height = '0px';
     summary.addEventListener('click', function (e) {
       e.preventDefault();
-      var open = qa.hasAttribute('open');
-      if (open) {
+      if (qa.hasAttribute('open')) {
         gsap.to(body, { height: 0, duration: .35, ease: 'power2.inOut',
           onComplete: function () { qa.removeAttribute('open'); ScrollTrigger.refresh(); } });
       } else {
@@ -504,16 +539,16 @@
     });
   });
 
-  /* ---------- 15. Появление блоков при скролле ---------- */
+  /* ---------- 16. Появление блоков при скролле ---------- */
 
   if (hasGSAP && !reduced) {
-    var revealSelectors = [
+    [
       '.facts .sec__head', '.fact', '.mach .sec__head', '.mach__body', '.mach__side',
-      '.promo .sec__head', '.step', '.promo__panel', '.prize',
+      '.promo .sec__head', '.step', '.promo__panel', '.prize', '.says__head', '.say',
       '.faq .sec__head', '.qa', '.fin__cols > *'
-    ];
-    revealSelectors.forEach(function (sel) {
+    ].forEach(function (sel) {
       $$(sel).forEach(function (el) {
+        if (el.closest('.marquee')) return; /* бегущие строки живут своей анимацией */
         var r = el.getBoundingClientRect();
         if (r.top < window.innerHeight * 0.92) return; /* уже в кадре — оставляем как есть */
         gsap.from(el, {
@@ -523,7 +558,6 @@
       });
     });
 
-    /* финальная типографика раскрывается побуквенно */
     var finChars = $$('.fin__type .ch');
     if (finChars.length) {
       gsap.from(finChars, {
@@ -533,12 +567,12 @@
     }
 
     gsap.to('.foot__mark', {
-      yPercent: -14, ease: 'none',
+      yPercent: -12, ease: 'none',
       scrollTrigger: { trigger: '.foot', start: 'top bottom', end: 'bottom bottom', scrub: true }
     });
   }
 
-  /* ---------- 16. Пересчёт после загрузки шрифтов ---------- */
+  /* ---------- 17. Пересчёт после загрузки шрифтов ---------- */
 
   if (hasGSAP && document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function () { ScrollTrigger.refresh(); });
