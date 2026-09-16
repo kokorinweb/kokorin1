@@ -35,15 +35,16 @@
   --tint:   #FEF1DC;
 
   /* шрифты */
-  --disp: "Rubik", "Trebuchet MS", system-ui, sans-serif;
-  --text: "Onest", "Helvetica Neue", Arial, sans-serif;
+  --disp: "Nunito", "Trebuchet MS", system-ui, sans-serif;
+  --text: "Alegreya Sans", "Helvetica Neue", Arial, sans-serif;
+  --script: "Pacifico", "Brush Script MT", cursive;
 
   /* шкала */
   --t-hero: clamp(2.8rem, 7.4vw, 6.4rem);
   --t-1:    clamp(2rem, 4.6vw, 3.9rem);
   --t-2:    clamp(1.6rem, 3vw, 2.5rem);
   --t-3:    clamp(1.08rem, 1.5vw, 1.35rem);
-  --t-body: clamp(1rem, .5vw + .88rem, 1.12rem);
+  --t-body: clamp(1.05rem, .55vw + .92rem, 1.2rem);
 
   /* форма */
   --r1: 14px; --r2: 22px; --r3: 34px; --r4: 44px; --pill: 999px;
@@ -155,7 +156,7 @@ button{font:inherit;color:inherit}
 .preloader{position:fixed;inset:0;z-index:200;background:var(--mist);color:var(--ink);display:grid;place-items:center}
 .preloader.is-done{pointer-events:none}
 .preloader__inner{width:min(380px,76vw);text-align:center}
-.preloader__mark{font-family:var(--disp);font-weight:700;font-size:clamp(2rem,6vw,3rem);letter-spacing:-.02em;color:var(--leaf)}
+.preloader__mark{font-family:var(--script);font-size:clamp(2.2rem,6.5vw,3.2rem);color:var(--leaf)}
 .preloader__meter{margin:1.5rem 0 .7rem;height:6px;border-radius:99px;background:var(--mist-2);overflow:hidden}
 .preloader__fill{display:block;height:100%;width:0%;border-radius:99px;background:var(--leaf)}
 .preloader__row{display:flex;justify-content:space-between;font-size:.8rem;color:var(--muted);font-variant-numeric:tabular-nums}
@@ -179,7 +180,7 @@ button{font:inherit;color:inherit}
 .head__mark{display:inline-flex;align-items:center;gap:.55rem}
 .head__logo{display:block;width:30px;height:30px;flex:0 0 auto}
 .head__logo svg{display:block;width:100%;height:100%}
-.head__name{font-family:var(--disp);font-weight:700;font-size:1.18rem;letter-spacing:-.02em}
+.head__name{font-family:var(--script);font-weight:400;font-size:1.42rem;letter-spacing:0;padding-top:.12em}
 .head__nav{display:flex;gap:clamp(.9rem,1.8vw,1.8rem);margin-left:auto;font-size:.95rem;font-weight:500}
 .head__nav a{position:relative;padding:.4rem 0;color:var(--muted);transition:color .2s}
 .head__nav a::after{
@@ -215,18 +216,12 @@ button{font:inherit;color:inherit}
 /* ─────────── БАНКА ─────────── */
 
 .can{display:block;height:auto}
-.can__fill{fill:var(--flav);transition:fill .6s cubic-bezier(.2,.8,.2,1)}
-.can__wave{fill:#fff;opacity:.14}
-.can__shadow{fill:rgba(20,69,43,.20)}
-.can__edge{fill:none;stroke:rgba(255,255,255,.55);stroke-width:2}
-.can__lid{fill:url(#lidG)}
-.can__lidInner{fill:#B9C3BF}
-.can__tab{fill:#8E9A96}
+.can__label{filter:drop-shadow(0 1px 2px rgba(0,0,0,.35))}
 .can__label text{fill:#fff}
-.can__brand{font-family:var(--disp);font-weight:700;font-size:31px;letter-spacing:-.01em}
-.can__flavor{font-family:var(--text);font-weight:600;font-size:15px;letter-spacing:.24em}
-.can__label line{stroke:#fff;opacity:.5;stroke-width:1.5}
-.can__vol{font-family:var(--text);font-weight:500;font-size:10px;letter-spacing:.16em;opacity:.8}
+.can__label line{stroke:#fff;opacity:.55;stroke-width:1.6}
+.can__brand{font-family:var(--script);font-weight:400;font-size:40px}
+.can__flavor{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:.2em}
+.can__vol{font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.14em;opacity:.85}
 
 /* ─────────── ГЕРОЙ ─────────── */
 
@@ -285,26 +280,20 @@ button{font:inherit;color:inherit}
 
 .hero__stage{
   position:absolute;right:0;top:50%;transform:translateY(-50%);
-  width:42%;height:min(92%,600px);
+  width:44%;height:min(96%,640px);
   display:grid;place-items:center;
 }
-.hero__splash{
-  position:absolute;width:86%;aspect-ratio:1;border-radius:46% 54% 60% 40% / 52% 44% 56% 48%;
-  background:color-mix(in srgb, var(--flav) 22%, #fff);
-  transition:background .6s;
-  animation:blob 14s ease-in-out infinite;
-}
-@keyframes blob{
-  0%,100%{border-radius:46% 54% 60% 40% / 52% 44% 56% 48%;transform:rotate(0deg)}
-  50%{border-radius:58% 42% 44% 56% / 44% 58% 42% 56%;transform:rotate(8deg)}
-}
-.hero__can{position:relative;z-index:3;width:clamp(150px,17vw,250px);will-change:transform}
-.hero__can .can{width:100%;filter:drop-shadow(0 30px 40px rgba(20,69,43,.32))}
+.hero__splash{position:absolute;width:92%;aspect-ratio:1;opacity:.5;animation:blob 16s ease-in-out infinite}
+.hero__splash svg{display:block;width:100%;height:100%}
+@keyframes blob{0%,100%{transform:rotate(-4deg) scale(1)}50%{transform:rotate(5deg) scale(1.05)}}
+.hero__can{position:relative;z-index:3;height:96%;aspect-ratio:26/56;width:auto;will-change:transform}
+.hero__can .can{height:100%;width:100%}
 .hero__fruit{position:absolute;z-index:2;pointer-events:none;filter:drop-shadow(0 10px 16px rgba(20,69,43,.22))}
 .hero__fruit svg{display:block;width:100%;height:100%}
 .hero__fruit--1{width:clamp(56px,7vw,104px);left:4%;top:24%;animation:float 7s ease-in-out infinite}
 .hero__fruit--2{width:clamp(44px,5.4vw,80px);right:8%;top:12%;animation:float 9s ease-in-out infinite reverse}
-.hero__fruit--3{width:clamp(50px,6vw,90px);right:12%;bottom:12%;animation:float 8s ease-in-out .6s infinite}
+.hero__fruit--3{width:clamp(50px,6vw,90px);right:10%;bottom:20%;animation:float 8s ease-in-out .6s infinite}
+.hero__fruit--4{z-index:4;width:clamp(64px,8vw,120px);left:16%;bottom:8%;animation:float 9s ease-in-out 1.1s infinite}
 @keyframes float{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-16px) rotate(6deg)}}
 
 .hero__dots{display:flex;gap:.5rem;padding-top:clamp(1.4rem,3vw,2.2rem)}
@@ -337,8 +326,8 @@ button{font:inherit;color:inherit}
   padding:clamp(2rem,4vw,3.5rem);
   background:var(--mist);border-radius:var(--r4);
 }
-.manifest__can{--flav:var(--leaf);position:relative;justify-self:center;width:clamp(150px,17vw,250px);will-change:transform}
-.manifest__can .can{width:100%;position:relative;z-index:2;filter:drop-shadow(0 26px 36px rgba(20,69,43,.26))}
+.manifest__can{--flav:var(--leaf);--flavTop:#7ED957;--flavBot:#1E7A3A;position:relative;justify-self:center;height:clamp(300px,52vh,520px);aspect-ratio:26/56;width:auto;will-change:transform}
+.manifest__can .can{height:100%;width:100%;position:relative;z-index:2}
 .manifest__halo{
   position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   width:170%;aspect-ratio:1;border-radius:50%;
@@ -381,7 +370,7 @@ button{font:inherit;color:inherit}
 .flav__art{position:relative;display:grid;place-items:center;min-height:clamp(250px,42vh,430px)}
 .flav__halo{position:absolute;width:88%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle, var(--tint) 0%, transparent 68%)}
 .flav__halo::after{content:"";position:absolute;inset:18%;border-radius:50%;background:color-mix(in srgb, var(--flav) 18%, #fff)}
-.flav__art .can{position:relative;z-index:3;width:clamp(120px,13vw,190px);filter:drop-shadow(0 22px 30px rgba(20,69,43,.26))}
+.flav__art .can{position:relative;z-index:3;height:clamp(230px,40vh,420px);width:auto}
 .flav__fruit{position:absolute;z-index:2;filter:drop-shadow(0 8px 14px rgba(20,69,43,.2))}
 .flav__fruit svg{display:block;width:100%;height:100%}
 .flav__fruit--a{width:clamp(52px,6vw,88px);left:6%;bottom:16%}
@@ -601,8 +590,8 @@ button{font:inherit;color:inherit}
 .fin__where li{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:.4rem 1.5rem;padding:.9rem 0;border-bottom:1px solid rgba(255,255,255,.3)}
 .fin__where b{font-family:var(--disp);font-weight:600;font-size:1.02rem}
 .fin__where span{font-size:.86rem;color:rgba(255,255,255,.8);text-align:right}
-.fin__can{--flav:var(--berry);width:clamp(104px,12vw,148px);margin:1.6rem 0 0 auto;transform:rotate(-8deg);pointer-events:none}
-.fin__can .can{width:100%;filter:drop-shadow(0 20px 30px rgba(120,20,50,.4))}
+.fin__can{--flav:var(--berry);--flavTop:#F5789F;--flavBot:#7A2A6B;width:clamp(120px,13vw,170px);margin:1.4rem 0 0 auto;transform:rotate(-8deg);pointer-events:none}
+.fin__can .can{width:100%}
 
 .sub{background:var(--paper);color:var(--ink);border-radius:var(--r3);padding:clamp(1.3rem,2.6vw,2rem);box-shadow:var(--sh-m)}
 .sub__field{margin-bottom:.9rem}
@@ -636,7 +625,7 @@ button{font:inherit;color:inherit}
 .foot__plain{display:block;padding:.6rem 0 0;font-size:.9rem;color:rgba(255,255,255,.5)}
 .foot__legal{margin:clamp(2.2rem,4vw,3.4rem) 0 0;padding-top:1.4rem;border-top:1px solid rgba(255,255,255,.14);font-size:.8rem;line-height:1.55;color:rgba(255,255,255,.42);max-width:80ch}
 .foot__mark{
-  margin-top:clamp(1rem,3vw,2rem);font-family:var(--disp);font-weight:700;
+  margin-top:clamp(1rem,3vw,2rem);font-family:var(--script);font-weight:400;
   font-size:clamp(4rem,21vw,17rem);line-height:.78;letter-spacing:-.045em;
   text-align:center;color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.18);user-select:none;
 }
@@ -669,7 +658,10 @@ button{font:inherit;color:inherit}
   /* На узком экране порядок другой: сначала продукт, потом текст и кнопки. */
   .hero__count{order:1;margin-bottom:.8rem}
   .hero__title{order:2}
-  .hero__stage{order:3;position:static;transform:none;width:100%;height:auto;min-height:clamp(260px,40vh,360px);margin:.6rem 0 .2rem}
+  /* Сцена возвращается в поток, поэтому высота банки задаётся явно:
+     процент от auto-родителя не разрешается и банка раздувается на весь экран. */
+  .hero__stage{order:3;position:static;transform:none;width:100%;height:auto;min-height:0;margin:.8rem 0 .4rem}
+  .hero__can{height:clamp(250px,40vh,360px);width:auto}
   .hero__aside{order:4;padding-top:.4rem}
   .hero__dots{order:5;padding-top:1.3rem}
   .hero__lead{max-width:none}

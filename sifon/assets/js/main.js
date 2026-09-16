@@ -17,11 +17,11 @@
 
   /* Линейка вкусов — один источник правды для героя, банки и пузырьков. */
   var SLIDES = [
-    { a: 'Яркий.',  b: 'Цитрус',   flav: '#F2901E', tint: '#FEF1DC', fruit: 'f-orange', cap: 'ЦИТРУС' },
-    { a: 'Свежий.', b: 'Киви',     flav: '#5BA83C', tint: '#E9F4E0', fruit: 'f-kiwi',   cap: 'КИВИ' },
-    { a: 'Спелая.', b: 'Ягода',    flav: '#E0507A', tint: '#FCE7EE', fruit: 'f-berry',  cap: 'ЯГОДА' },
-    { a: 'Тёмный.', b: 'Виноград', flav: '#7B4FA8', tint: '#EFE7F7', fruit: 'f-grape',  cap: 'ВИНОГРАД' },
-    { a: 'Жаркий.', b: 'Тропик',   flav: '#EFA81B', tint: '#FDF0D3', fruit: 'f-mango',  cap: 'ТРОПИК' }
+    { a: 'Яркий.',  b: 'Цитрус',   flav: '#F2901E', top: '#FBC02D', bot: '#8FBF3A', tint: '#FEF1DC', fruit: 'f-orange', cap: 'ЦИТРУС' },
+    { a: 'Свежий.', b: 'Киви',     flav: '#5BA83C', top: '#B6D94F', bot: '#2E7D45', tint: '#E9F4E0', fruit: 'f-kiwi',   cap: 'КИВИ' },
+    { a: 'Спелая.', b: 'Ягода',    flav: '#E0507A', top: '#F5789F', bot: '#7A2A6B', tint: '#FCE7EE', fruit: 'f-berry',  cap: 'ЯГОДА' },
+    { a: 'Тёмный.', b: 'Виноград', flav: '#7B4FA8', top: '#A97FD1', bot: '#3F2A6B', tint: '#EFE7F7', fruit: 'f-grape',  cap: 'ВИНОГРАД' },
+    { a: 'Жаркий.', b: 'Тропик',   flav: '#EFA81B', top: '#FFD147', bot: '#E4622A', tint: '#FDF0D3', fruit: 'f-mango',  cap: 'ТРОПИК' }
   ];
 
   /* ---------- 1. Инерционный скролл ---------- */
@@ -84,20 +84,23 @@
   var heroNum = $('#heroNum'), heroNumBar = $('#heroNumBar');
   var canFlavor = $('#canFlavor');
   var dots = $$('.dot');
-  var fruitA = $('.hero__fruit--1 use'), fruitC = $('.hero__fruit--3 use');
+  var fruitA = $('.hero__fruit--1 use'), fruitC = $('.hero__fruit--3 use'), fruitD = $('.hero__fruit--4 use');
   var slide = 0, slideTimer = null;
 
   function paintSlide(i) {
     var s = SLIDES[i];
     if (heroSection) {
       heroSection.style.setProperty('--flav', s.flav);
+      heroSection.style.setProperty('--flavTop', s.top);
+      heroSection.style.setProperty('--flavBot', s.bot);
       heroSection.style.setProperty('--tint', s.tint);
     }
     if (heroNum) heroNum.textContent = '0' + (i + 1);
     if (heroNumBar) heroNumBar.style.width = ((i + 1) / SLIDES.length * 100) + '%';
     if (canFlavor) canFlavor.textContent = s.cap;
     if (fruitA) fruitA.setAttribute('href', '#' + s.fruit);
-    if (fruitC) fruitC.setAttribute('href', '#' + (i % 2 ? 'f-berry' : 'f-orange'));
+    if (fruitC) fruitC.setAttribute('href', '#' + SLIDES[(i + 1) % SLIDES.length].fruit);
+    if (fruitD) fruitD.setAttribute('href', '#' + SLIDES[(i + 2) % SLIDES.length].fruit);
     dots.forEach(function (d, n) {
       d.classList.toggle('is-on', n === i);
       d.setAttribute('aria-selected', String(n === i));
