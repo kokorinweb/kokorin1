@@ -3,18 +3,19 @@ import { listOrders, statusCounts } from "@/lib/db/orders";
 import { STATUS_GROUPS, STATUS_META, type OrderStatus } from "@/lib/status";
 import { Shell } from "@/components/admin/Shell";
 import { OrdersTable } from "@/components/admin/OrdersTable";
+import { Button, INPUT_CLASS, SELECT_CLASS } from "@/components/admin/ui";
 import type { Fulfillment } from "@/lib/order";
 
 export const dynamic = "force-dynamic";
 
-/** Плитки-вкладки как в мокапе: цифра в плитке и есть навигация. */
+/** Плитки-вкладки: цифра в плитке и есть навигация по стадиям кухни. */
 const TABS = ["new", "kitchen", "handoff", "done"] as const;
 
 const TAB_TONE: Record<string, string> = {
-  new: "bg-terracotta/10 ring-terracotta/20",
-  kitchen: "bg-[#e8dff5] ring-[#c9b4e6]",
-  handoff: "bg-[#dce9f7] ring-[#b6d2ec]",
-  done: "bg-basil/15 ring-basil/30",
+  new: "border-warn/25 bg-warn-tint",
+  kitchen: "border-violet/25 bg-violet-tint",
+  handoff: "border-blue/25 bg-blue-tint",
+  done: "border-accent/25 bg-accent-tint",
 };
 
 function buildQuery(params: Record<string, string | number | undefined>): string {
@@ -58,7 +59,7 @@ export default async function OrdersPage({
       actions={
         <a
           href={exportHref}
-          className="inline-flex items-center gap-2 rounded-full bg-panel px-3 py-1.5 text-sm font-medium text-ink-soft transition hover:bg-ink/5"
+          className="inline-flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2 text-sm font-semibold text-ink-soft transition hover:bg-tint"
         >
           <svg
             viewBox="0 0 24 24"
@@ -76,8 +77,7 @@ export default async function OrdersPage({
         </a>
       }
     >
-      {/* Вкладки-плитки: сколько заказов ждёт на каждом шаге кухни. */}
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {TABS.map((id) => {
           const tab = STATUS_GROUPS.find((item) => item.id === id)!;
           const active = group === id;
@@ -86,15 +86,16 @@ export default async function OrdersPage({
             <Link
               key={id}
               href={`/admin/orders${buildQuery({ group: id, q, fulfillment })}`}
-              className={`rounded-3xl p-4 ring-1 transition ${TAB_TONE[id]} ${
-                active ? "ring-2 ring-ink/30" : "hover:ring-2"
+              aria-current={active ? "true" : undefined}
+              className={`rounded-2xl border p-4 transition ${TAB_TONE[id]} ${
+                active ? "ring-2 ring-ink/15" : "hover:brightness-[0.99]"
               }`}
             >
-              <p className="text-sm font-medium text-ink-soft">{tab.title}</p>
-              <p className="mt-3 text-2xl leading-none font-semibold tracking-tight">
+              <p className="text-sm font-semibold text-ink-soft">{tab.title}</p>
+              <p className="mt-3 text-2xl leading-none font-bold tracking-tight">
                 {countFor(tab.statuses)}
               </p>
-              <p className="mt-1 text-[11px] text-ink-soft/70">
+              <p className="mt-1 text-[11px] text-ink-soft/75">
                 {tab.statuses.map((status) => STATUS_META[status].label).join(" · ")}
               </p>
             </Link>
@@ -106,66 +107,57 @@ export default async function OrdersPage({
       <form
         method="get"
         action="/admin/orders"
-        className="flex flex-wrap items-center gap-2 rounded-3xl bg-white p-3 shadow-[0_18px_50px_-40px_rgba(34,29,23,0.55)]"
+        className="flex flex-wrap items-center gap-2 rounded-2xl border border-line bg-white p-3"
       >
         <input type="hidden" name="group" value={group} />
 
-        <label className="relative min-w-[220px] flex-1">
+        <label className="min-w-[220px] flex-1">
           <span className="sr-only">Поиск заказа</span>
           <input
             type="search"
             name="q"
             defaultValue={q}
             placeholder="Номер, имя или телефон"
-            className="w-full rounded-xl border border-line bg-panel px-4 py-2.5 text-sm outline-none focus:border-basil focus:bg-white"
+            className={INPUT_CLASS}
           />
         </label>
 
-        <label className="text-sm">
+        <label>
           <span className="sr-only">Способ получения</span>
-          <select
-            name="fulfillment"
-            defaultValue={fulfillment ?? ""}
-            className="rounded-xl border border-line bg-panel px-3 py-2.5 text-sm outline-none focus:border-basil focus:bg-white"
-          >
+          <select name="fulfillment" defaultValue={fulfillment ?? ""} className={SELECT_CLASS}>
             <option value="">Любой способ</option>
             <option value="delivery">Доставка</option>
             <option value="pickup">Самовывоз</option>
           </select>
         </label>
 
-        <button
-          type="submit"
-          className="rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-ink/85"
-        >
-          Найти
-        </button>
+        <Button type="submit">Найти</Button>
 
         {filtered ? (
           <Link
             href={`/admin/orders${buildQuery({ group })}`}
-            className="rounded-xl px-3 py-2.5 text-sm text-slate underline hover:text-ink"
+            className="px-3 py-2.5 text-sm text-ink-muted underline hover:text-ink"
           >
             Сбросить
           </Link>
         ) : null}
 
-        <span className="ml-auto flex flex-wrap items-center gap-3 text-xs text-slate">
+        <span className="ml-auto flex flex-wrap items-center gap-3 text-xs text-ink-muted">
           <Link
             href={`/admin/orders${buildQuery({ q, fulfillment })}`}
-            className={`hover:text-ink ${group === "" ? "font-semibold text-ink" : ""}`}
+            className={`hover:text-ink ${group === "" ? "font-bold text-ink" : ""}`}
           >
             Все ({totalAll})
           </Link>
           <Link
             href={`/admin/orders${buildQuery({ group: "active", q, fulfillment })}`}
-            className={`hover:text-ink ${group === "active" ? "font-semibold text-ink" : ""}`}
+            className={`hover:text-ink ${group === "active" ? "font-bold text-ink" : ""}`}
           >
             В работе ({countFor(["new", "accepted", "cooking"])})
           </Link>
           <Link
             href={`/admin/orders${buildQuery({ group: "cancelled", q, fulfillment })}`}
-            className={`hover:text-ink ${group === "cancelled" ? "font-semibold text-ink" : ""}`}
+            className={`hover:text-ink ${group === "cancelled" ? "font-bold text-ink" : ""}`}
           >
             Отменённые ({counts.cancelled})
           </Link>
@@ -175,15 +167,15 @@ export default async function OrdersPage({
       <OrdersTable orders={list.orders} />
 
       {list.pages > 1 ? (
-        <nav className="flex items-center justify-between rounded-3xl bg-white px-5 py-3 text-sm shadow-[0_18px_50px_-40px_rgba(34,29,23,0.55)]">
-          <span className="text-slate">
+        <nav className="flex items-center justify-between rounded-2xl border border-line bg-white px-5 py-3 text-sm">
+          <span className="text-ink-muted">
             Страница {list.page} из {list.pages}
           </span>
           <span className="flex gap-2">
             {list.page > 1 ? (
               <Link
                 href={`/admin/orders${buildQuery({ group, q, fulfillment, page: list.page - 1 })}`}
-                className="rounded-xl bg-panel px-3 py-1.5 font-medium transition hover:bg-ink/5"
+                className="rounded-xl bg-tint px-3 py-1.5 font-semibold transition hover:bg-line"
               >
                 ← Назад
               </Link>
@@ -191,7 +183,7 @@ export default async function OrdersPage({
             {list.page < list.pages ? (
               <Link
                 href={`/admin/orders${buildQuery({ group, q, fulfillment, page: list.page + 1 })}`}
-                className="rounded-xl bg-panel px-3 py-1.5 font-medium transition hover:bg-ink/5"
+                className="rounded-xl bg-tint px-3 py-1.5 font-semibold transition hover:bg-line"
               >
                 Вперёд →
               </Link>

@@ -7,16 +7,16 @@ import { PERIODS } from "@/lib/db/stats";
  */
 export function PeriodPicker({ active }: { active: string }) {
   return (
-    <div className="flex items-center gap-1 rounded-full bg-panel p-1">
+    <div className="flex items-center gap-1 rounded-xl border border-line bg-white p-1">
       {PERIODS.map((period) => (
         <Link
           key={period.id}
           href={`/admin?period=${period.id}`}
           aria-current={period.id === active ? "true" : undefined}
-          className={`rounded-full px-3 py-1.5 text-sm font-medium transition ${
+          className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
             period.id === active
-              ? "bg-white text-ink shadow-sm"
-              : "text-slate hover:text-ink"
+              ? "bg-accent-tint text-accent-strong"
+              : "text-ink-muted hover:bg-tint hover:text-ink"
           }`}
         >
           {period.title}

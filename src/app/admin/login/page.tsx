@@ -22,11 +22,17 @@ export default async function LoginPage({
 
   return (
     <div className="flex min-h-dvh items-center justify-center p-6">
-      <div className="w-full max-w-sm rounded-3xl bg-white p-8 shadow-[0_24px_60px_-40px_rgba(34,29,23,0.5)]">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate">
-          {RESTAURANT.name}
-        </p>
-        <h1 className="display mt-2 text-2xl">Панель заказов</h1>
+      <div className="w-full max-w-sm rounded-2xl border border-line bg-white p-8">
+        <div className="flex items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-base font-bold text-white"
+          >
+            B
+          </span>
+          <span className="text-sm leading-tight font-bold">{RESTAURANT.name}</span>
+        </div>
+        <h1 className="mt-5 text-[1.375rem] font-bold">Панель заказов</h1>
 
         {adminConfigured() ? (
           <>
@@ -41,18 +47,18 @@ export default async function LoginPage({
                 autoComplete="current-password"
                 autoFocus
                 required
-                className="w-full rounded-xl border border-line bg-panel px-4 py-3 text-base outline-none focus:border-basil focus:bg-white"
+                className="w-full rounded-xl border border-line bg-surface-2 px-4 py-3 text-base outline-none transition focus:border-accent focus:bg-white"
               />
               <button
                 type="submit"
-                className="w-full rounded-xl bg-basil px-4 py-3 font-semibold text-white transition hover:bg-basil-dark"
+                className="w-full rounded-xl bg-accent px-4 py-3 font-semibold text-white transition hover:bg-accent-strong"
               >
                 Войти
               </button>
             </form>
 
             {message ? (
-              <p className="mt-4 rounded-xl bg-terracotta/10 px-4 py-3 text-sm text-terracotta">
+              <p className="mt-4 rounded-xl bg-warn-tint px-4 py-3 text-sm text-warn">
                 {message}
               </p>
             ) : null}
@@ -63,7 +69,7 @@ export default async function LoginPage({
            * и адресов клиентов. Поэтому без ADMIN_PASSWORD админка просто закрыта.
            */
           <div className="mt-6 space-y-3 text-sm text-ink-soft">
-            <p className="rounded-xl bg-gold/10 px-4 py-3 text-[#8a6316]">
+            <p className="rounded-xl bg-gold-tint px-4 py-3 text-gold-ink">
               Админка отключена: не задан <code className="font-mono">ADMIN_PASSWORD</code>.
             </p>
             <p>
@@ -73,7 +79,7 @@ export default async function LoginPage({
           </div>
         )}
 
-        <Link href="/" className="mt-6 inline-block text-sm text-slate underline">
+        <Link href="/" className="mt-6 inline-block text-sm text-ink-muted underline">
           ← На сайт
         </Link>
       </div>

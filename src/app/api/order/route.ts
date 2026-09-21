@@ -3,6 +3,7 @@ import { OrderError, makeOrderNumber, orderSchema, priceOrder } from "@/lib/orde
 import { notifyNewOrder } from "@/lib/telegram";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { createOrder } from "@/lib/db/orders";
+import { unavailableItemsSafe } from "@/lib/db/availability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,10 +35,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Укажите адрес доставки" }, { status: 400 });
   }
 
+  // Стоп-лист читаем до расчёта: блюдо могло кончиться, пока гость собирал корзину.
+  const unavailable = await unavailableItemsSafe();
+
   let priced;
   try {
     // Цены и суммы считает сервер по MENU: то, что прислал браузер, значения не имеет.
-    priced = priceOrder(input.lines, input.fulfillment);
+    priced = priceOrder(input.lines, input.fulfillment, unavailable);
   } catch (error) {
     if (error instanceof OrderError) {
       return NextResponse.json({ error: error.message }, { status: 400 });

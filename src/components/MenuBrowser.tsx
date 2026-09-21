@@ -15,7 +15,12 @@ const DIET_FILTERS = [
 
 type Diet = (typeof DIET_FILTERS)[number]["id"];
 
-export function MenuBrowser() {
+export function MenuBrowser({
+  unavailable = {},
+}: {
+  /** id блюда → причина. Приходит с сервера: меню в коде, а стоп-лист в базе. */
+  unavailable?: Record<string, string>;
+}) {
   const searchParams = useSearchParams();
   const [category, setCategory] = useState<Filter>("all");
   const [diet, setDiet] = useState<Diet>("any");
@@ -83,7 +88,7 @@ export function MenuBrowser() {
       ) : (
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {visible.map((item) => (
-            <DishCard key={item.id} item={item} />
+            <DishCard key={item.id} item={item} stopReason={unavailable[item.id] ?? null} />
           ))}
         </div>
       )}

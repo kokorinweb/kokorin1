@@ -2,6 +2,7 @@ import { Bot, InlineKeyboard } from "grammy";
 import { CATEGORIES, formatPrice, itemsByCategory, type CategoryId } from "./menu";
 import { RESTAURANT, siteUrl } from "./restaurant";
 import { askAssistant, aiConfigured, type ChatMessage } from "./ai";
+import { unavailableItemsSafe } from "./db/availability";
 import type { OrderInput, PricedOrder } from "./order";
 
 export function botConfigured(): boolean {
@@ -45,11 +46,16 @@ function mainKeyboard(): InlineKeyboard {
     .url("🛒 Заказать на сайте", siteUrl());
 }
 
-function categoryText(category: CategoryId): string {
+function categoryText(category: CategoryId, unavailable: Map<string, string>): string {
   const meta = CATEGORIES.find((c) => c.id === category);
-  const lines = itemsByCategory(category).map(
-    (item) => `• ${item.name} — ${formatPrice(item.price)} (${item.portion})`,
-  );
+  const lines = itemsByCategory(category).map((item) => {
+    // Закончившееся не прячем, а зачёркиваем: гость должен понимать, что блюдо
+    // существует, просто не сегодня.
+    const stopped = unavailable.has(item.id);
+    const head = `• ${item.name} — ${formatPrice(item.price)} (${item.portion})`;
+    return stopped ? `• <s>${item.name}</s> — сегодня закончилось` : head;
+  });
+
   return `<b>${meta?.title} · ${meta?.subtitle}</b>\n\n${lines.join("\n")}`;
 }
 
@@ -113,7 +119,9 @@ export function createBot(): Bot {
     const category = ctx.match[1] as CategoryId;
     await ctx.answerCallbackQuery();
     if (!CATEGORIES.some((c) => c.id === category)) return;
-    await ctx.reply(categoryText(category), { parse_mode: "HTML" });
+    await ctx.reply(categoryText(category, await unavailableItemsSafe()), {
+      parse_mode: "HTML",
+    });
   });
 
   bot.on("message:text", async (ctx) => {
@@ -131,7 +139,7 @@ export function createBot(): Bot {
     const thread = remember(ctx.chat.id, { role: "user", content: question });
 
     try {
-      const reply = await askAssistant(thread, "telegram");
+      const reply = await askAssistant(thread, "telegram", await unavailableItemsSafe());
       const text = reply.text || `Не уверен, что понял вопрос. Позвоните нам: ${RESTAURANT.phone}`;
       remember(ctx.chat.id, { role: "assistant", content: text });
       await ctx.reply(text);

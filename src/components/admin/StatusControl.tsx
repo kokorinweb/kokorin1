@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { changeStatus } from "@/app/admin/actions";
 import { STATUS_META, nextStatuses, type OrderStatus } from "@/lib/status";
@@ -9,8 +9,11 @@ import type { Fulfillment } from "@/lib/order";
 /**
  * Пилюля статуса, которая одновременно и переключатель.
  *
- * Доступные переходы считает та же функция, что и база, поэтому в меню не
- * появится «выдан» у заказа, который ещё готовится. Итог всё равно проверяется
+ * Меню позиционируется от координат кнопки и висит на `fixed`: таблица заказов
+ * прокручивается по горизонтали, а внутри прокручиваемого контейнера абсолютное
+ * меню обрезается по его краю.
+ *
+ * Доступные переходы считает та же функция, что и база. Итог всё равно проверяется
  * на сервере: меню — удобство, а не защита.
  */
 export function StatusControl({
@@ -18,39 +21,82 @@ export function StatusControl({
   status,
   fulfillment,
   size = "sm",
+  onChanged,
 }: {
   number: string;
   status: OrderStatus;
   fulfillment: Fulfillment;
   size?: "sm" | "md";
+  onChanged?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [spot, setSpot] = useState<{ top: number; left: number } | null>(null);
   const [pending, startTransition] = useTransition();
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const router = useRouter();
 
   const meta = STATUS_META[status];
   const options = nextStatuses(status, fulfillment);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const close = () => setOpen(false);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    window.addEventListener("scroll", close, true);
+    window.addEventListener("resize", close);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("scroll", close, true);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  function toggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    const rect = buttonRef.current?.getBoundingClientRect();
+    if (rect) {
+      const width = 216;
+      setSpot({
+        top: rect.bottom + 6,
+        left: Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8),
+      });
+    }
+    setOpen(true);
+  }
 
   function move(to: OrderStatus) {
     setOpen(false);
     setError(null);
     startTransition(async () => {
       const result = await changeStatus(number, to);
-      if (!result.ok) setError(result.error);
-      else router.refresh();
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      onChanged?.();
+      router.refresh();
     });
   }
 
   return (
-    <div className="relative inline-block text-left">
+    <div className="inline-block text-left">
       <button
+        ref={buttonRef}
         type="button"
         disabled={pending || options.length === 0}
-        onClick={() => setOpen((value) => !value)}
+        onClick={toggle}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={`inline-flex items-center gap-1.5 rounded-full ring-1 font-medium transition disabled:opacity-60 ${meta.pill} ${
+        className={`inline-flex items-center gap-1.5 rounded-full font-semibold ring-1 transition disabled:opacity-60 ${meta.pill} ${
           size === "md" ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs"
         }`}
       >
@@ -70,18 +116,18 @@ export function StatusControl({
         ) : null}
       </button>
 
-      {open ? (
+      {open && spot ? (
         <>
-          {/* Клик мимо меню закрывает его — без библиотеки поповеров. */}
           <button
             type="button"
             aria-label="Закрыть меню статусов"
-            className="fixed inset-0 z-10 cursor-default"
+            className="fixed inset-0 z-20 cursor-default"
             onClick={() => setOpen(false)}
           />
           <div
             role="menu"
-            className="absolute right-0 z-20 mt-1 w-48 overflow-hidden rounded-xl border border-line bg-white py-1 shadow-xl"
+            style={{ top: spot.top, left: spot.left, width: 216 }}
+            className="fixed z-30 overflow-hidden rounded-xl border border-line bg-white p-1 shadow-[0_18px_40px_-20px_rgba(38,33,25,0.35)]"
           >
             {options.map((option) => (
               <button
@@ -89,7 +135,7 @@ export function StatusControl({
                 type="button"
                 role="menuitem"
                 onClick={() => move(option)}
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-panel"
+                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition hover:bg-tint"
               >
                 <span
                   aria-hidden="true"
@@ -102,7 +148,7 @@ export function StatusControl({
         </>
       ) : null}
 
-      {error ? <p className="mt-1 text-xs text-terracotta">{error}</p> : null}
+      {error ? <p className="mt-1 text-xs text-warn">{error}</p> : null}
     </div>
   );
 }

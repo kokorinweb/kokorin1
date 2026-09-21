@@ -19,9 +19,8 @@ export const VIZ_SERIES = [
   "#008300",
 ] as const;
 
-/** Выручка по дням — один ряд, один цвет. Базилик из палитры ресторана. */
-export const VIZ_BAR = "#2f5d3f";
-export const VIZ_BAR_HOVER = "#23472f";
+/** Выручка по дням — один ряд, один цвет: акцент панели. Контраст к белому 5:1. */
+export const VIZ_BAR = "#2f7d55";
 
 export function seriesColor(index: number): string {
   return VIZ_SERIES[index % VIZ_SERIES.length]!;

@@ -69,4 +69,50 @@ create table if not exists order_events (
 );
 
 create index if not exists order_events_order_idx on order_events (order_id, created_at);
+-- ─── Стоп-лист ───────────────────────────────────────────────────────────
+-- Меню живёт в коде, а «закончилось» — состояние вечера, а не деплоя.
+-- Поэтому здесь только доступность по id блюда, без названий и цен.
+create table if not exists menu_availability (
+  item_id    text primary key,
+  available  boolean not null default true,
+  reason     text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+-- ─── Гости ──────────────────────────────────────────────────────────────
+-- Заметки менеджера: аллергия, «просит стол у окна», «в прошлый раз ждал час».
+create table if not exists customer_notes (
+  id         integer generated always as identity primary key,
+  phone      text not null references customers(phone) on delete cascade,
+  text       text not null,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists customer_notes_phone_idx on customer_notes (phone, created_at desc);
+
+-- Метки из фиксированного словаря (src/lib/tags.ts): их видно в списке гостей.
+create table if not exists customer_tags (
+  phone      text not null references customers(phone) on delete cascade,
+  tag        text not null,
+  created_at timestamptz not null default now(),
+  primary key (phone, tag)
+);
+
+-- ─── Брони столиков ─────────────────────────────────────────────────────
+create table if not exists reservations (
+  id          integer generated always as identity primary key,
+  guest_name  text not null,
+  phone       text not null,
+  at          timestamptz not null,
+  guests      integer not null,
+  area        text not null default '',
+  comment     text not null default '',
+  status      text not null default 'new',
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+create index if not exists reservations_at_idx     on reservations (at);
+create index if not exists reservations_status_idx on reservations (status);
+
 `;

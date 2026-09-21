@@ -4,18 +4,35 @@ import { useState } from "react";
 import { formatPrice, type MenuItem } from "@/lib/menu";
 import { useCart } from "./CartContext";
 
-export function DishCard({ item }: { item: MenuItem }) {
+/**
+ * Карточка блюда. `stopReason` приходит из стоп-листа: блюдо остаётся на витрине,
+ * но добавить его нельзя — гость должен видеть, что позиция существует, просто
+ * не сегодня, а не думать, что её убрали из меню.
+ */
+export function DishCard({
+  item,
+  stopReason,
+}: {
+  item: MenuItem;
+  stopReason?: string | null;
+}) {
   const { add } = useCart();
   const [justAdded, setJustAdded] = useState(false);
+  const stopped = stopReason !== undefined && stopReason !== null;
 
   function handleAdd() {
+    if (stopped) return;
     add(item.id, 1);
     setJustAdded(true);
     window.setTimeout(() => setJustAdded(false), 1400);
   }
 
   return (
-    <article className="flex h-full flex-col rounded-2xl border border-cream-dark bg-white/70 p-5 transition-shadow hover:shadow-lg hover:shadow-ink/5">
+    <article
+      className={`flex h-full flex-col rounded-2xl border border-cream-dark p-5 transition-shadow ${
+        stopped ? "bg-cream-dark/40" : "bg-white/70 hover:shadow-lg hover:shadow-ink/5"
+      }`}
+    >
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="display text-xl leading-tight">{item.name}</h3>
@@ -30,6 +47,11 @@ export function DishCard({ item }: { item: MenuItem }) {
       <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">{item.description}</p>
 
       <div className="mt-4 flex flex-wrap gap-1.5 text-xs">
+        {stopped && (
+          <span className="rounded-full bg-terracotta px-2 py-0.5 font-semibold text-cream">
+            сегодня закончилось{stopReason ? `: ${stopReason}` : ""}
+          </span>
+        )}
         {item.vegetarian && (
           <span className="rounded-full bg-basil/10 px-2 py-0.5 text-basil">вегетарианское</span>
         )}
@@ -46,13 +68,16 @@ export function DishCard({ item }: { item: MenuItem }) {
       <button
         type="button"
         onClick={handleAdd}
+        disabled={stopped}
         className={`mt-5 rounded-full px-4 py-2.5 text-sm font-semibold transition-colors ${
-          justAdded
-            ? "bg-basil text-cream"
-            : "bg-cream-dark text-ink hover:bg-basil hover:text-cream"
+          stopped
+            ? "cursor-not-allowed bg-cream-dark/70 text-ink-soft"
+            : justAdded
+              ? "bg-basil text-cream"
+              : "bg-cream-dark text-ink hover:bg-basil hover:text-cream"
         }`}
       >
-        {justAdded ? "Добавлено ✓" : "В корзину"}
+        {stopped ? "Закончилось" : justAdded ? "Добавлено ✓" : "В корзину"}
       </button>
     </article>
   );

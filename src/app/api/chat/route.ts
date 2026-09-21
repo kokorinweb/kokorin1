@@ -3,6 +3,7 @@ import { z } from "zod";
 import { aiConfigured, askAssistant } from "@/lib/ai";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
 import { RESTAURANT } from "@/lib/restaurant";
+import { unavailableItemsSafe } from "@/lib/db/availability";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -55,7 +56,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const reply = await askAssistant(messages, "web");
+    // Стоп-лист в контекст модели: иначе Лука будет бодро продавать то, чего нет.
+    const reply = await askAssistant(messages, "web", await unavailableItemsSafe());
     return NextResponse.json(reply);
   } catch (error) {
     console.error("[api/chat] ошибка ассистента:", error);

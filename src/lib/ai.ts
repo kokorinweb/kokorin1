@@ -37,8 +37,11 @@ export function aiConfigured(): boolean {
  * Меню в компактном виде для контекста модели.
  * Отдаём весь список целиком: он маленький (~25 позиций), а RAG на таком объёме —
  * лишняя сложность и лишний источник ошибок.
+ *
+ * Стоп-лист помечается прямо в строке блюда, а не отдельным списком в конце промпта:
+ * модель читает позицию и сразу видит, что её сегодня нет.
  */
-function menuForPrompt(): string {
+function menuForPrompt(unavailable: Map<string, string>): string {
   return CATEGORIES.map((category) => {
     const lines = MENU.filter((item) => item.category === category.id).map((item) => {
       const flags = [
@@ -48,13 +51,18 @@ function menuForPrompt(): string {
       ]
         .filter(Boolean)
         .join("; ");
-      return `- [${item.id}] ${item.name} (${item.nameIt}), ${formatPrice(item.price)}, ${item.portion}. ${item.description} ${flags}.`;
+      const stopped = unavailable.get(item.id);
+      const stop =
+        stopped === undefined
+          ? ""
+          : ` СЕГОДНЯ ЗАКОНЧИЛОСЬ — не предлагать и не добавлять в корзину${stopped ? ` (${stopped})` : ""}.`;
+      return `- [${item.id}] ${item.name} (${item.nameIt}), ${formatPrice(item.price)}, ${item.portion}. ${item.description} ${flags}.${stop}`;
     });
     return `## ${category.title} — ${category.subtitle}\n${lines.join("\n")}`;
   }).join("\n\n");
 }
 
-function buildSystemPrompt(channel: Channel): string {
+function buildSystemPrompt(channel: Channel, unavailable: Map<string, string>): string {
   const hours = RESTAURANT.hours.map((h) => `${h.days}: ${h.time}`).join("; ");
   const d = RESTAURANT.delivery;
 
@@ -73,11 +81,12 @@ function buildSystemPrompt(channel: Channel): string {
 Самовывоз: готовность примерно ${RESTAURANT.pickup.etaMinutes} минут, скидка ${RESTAURANT.pickup.discountPercent}%.
 
 МЕНЮ (полное, других блюд не существует)
-${menuForPrompt()}
+${menuForPrompt(unavailable)}
 
 ПРАВИЛА
 1. Отвечай только на основании сведений выше. Если чего-то нет в меню — прямо скажи, что такого блюда нет, и предложи ближайшую альтернативу из меню.
 2. Никогда не выдумывай блюда, цены, состав, акции, наличие столиков и сроки. Цены называй ровно те, что указаны.
+2a. Блюда с пометкой «СЕГОДНЯ ЗАКОНЧИЛОСЬ» не предлагай и не добавляй в корзину. Если гость просит именно его — честно скажи, что на сегодня закончилось, и предложи ближайшую замену из меню.
 3. Про аллергены отвечай только по полю «аллергены». Обязательно добавляй, что производство общее и следы других аллергенов возможны, а при серьёзной аллергии нужно предупредить менеджера по телефону ${RESTAURANT.phone}.
 4. Бронь столика, изменение или отмена заказа, жалобы, вопросы о вакансиях и всё, чего нет в твоих данных, — переводи на телефон ${RESTAURANT.phone}. Не обещай ничего от имени ресторана.
 5. Отвечай по-русски (или на языке гостя), тепло и по делу: 2–4 предложения, без канцелярита и без списка на пол-экрана, если гость сам не попросил подробностей.
@@ -126,6 +135,7 @@ const MAX_TOOL_ROUNDS = 3;
 function runTool(
   name: string,
   input: Record<string, unknown>,
+  unavailable: Map<string, string>,
 ): { result: string; action?: AssistantAction; isError?: boolean } {
   if (name === "add_to_cart") {
     const itemId = String(input.itemId ?? "");
@@ -133,6 +143,15 @@ function runTool(
     const item = getMenuItem(itemId);
     if (!item) {
       return { result: `Ошибка: блюда с id «${itemId}» нет в меню.`, isError: true };
+    }
+    // Промпт уже запрещает это делать, но инструмент не должен верить промпту:
+    // в корзину не попадёт то, чего нет на кухне.
+    if (unavailable.has(itemId)) {
+      const reason = unavailable.get(itemId);
+      return {
+        result: `Ошибка: «${item.name}» сегодня закончилось${reason ? ` (${reason})` : ""}. В корзину не добавлено. Предложи гостю замену из меню.`,
+        isError: true,
+      };
     }
     return {
       result: `Добавлено в корзину: ${item.name} x${quantity}, ${formatPrice(item.price * quantity)}.`,
@@ -163,6 +182,7 @@ function textOf(blocks: Anthropic.ContentBlock[]): string {
 export async function askAssistant(
   history: ChatMessage[],
   channel: Channel,
+  unavailable: Map<string, string> = new Map(),
 ): Promise<AssistantReply> {
   const anthropic = getClient();
   const tools = channel === "web" ? WEB_TOOLS : [];
@@ -177,7 +197,7 @@ export async function askAssistant(
     const response = await anthropic.messages.create({
       model: AI_MODEL,
       max_tokens: 700,
-      system: buildSystemPrompt(channel),
+      system: buildSystemPrompt(channel, unavailable),
       tools,
       messages,
     });
@@ -192,7 +212,11 @@ export async function askAssistant(
 
     const results: Anthropic.ToolResultBlockParam[] = [];
     for (const toolUse of toolUses) {
-      const outcome = runTool(toolUse.name, (toolUse.input ?? {}) as Record<string, unknown>);
+      const outcome = runTool(
+        toolUse.name,
+        (toolUse.input ?? {}) as Record<string, unknown>,
+        unavailable,
+      );
       if (outcome.action) actions.push(outcome.action);
       results.push({
         type: "tool_result",

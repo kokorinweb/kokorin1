@@ -14,6 +14,19 @@ export const orderLineSchema = z.object({
 
 export const fulfillmentSchema = z.enum(["delivery", "pickup"]);
 
+/** Откуда пришёл заказ. Телефонный оформляет менеджер в панели. */
+export type OrderSource = "site" | "telegram" | "phone";
+
+export const SOURCE_LABEL: Record<OrderSource, string> = {
+  site: "сайт",
+  telegram: "телеграм",
+  phone: "телефон",
+};
+
+export function sourceLabel(source: string): string {
+  return SOURCE_LABEL[source as OrderSource] ?? source;
+}
+
 export const orderSchema = z.object({
   lines: z.array(orderLineSchema).min(1, "Корзина пуста").max(40),
   fulfillment: fulfillmentSchema,
@@ -93,12 +106,31 @@ export function quoteOrder(
   };
 }
 
-/** То же самое, но с проверкой правил оформления. Используется только на сервере. */
+/**
+ * То же самое, но с проверкой правил оформления. Используется только на сервере.
+ *
+ * Стоп-лист приходит параметром, а не читается здесь из базы: эта функция должна
+ * оставаться чистой и синхронной, потому что тот же расчёт крутится в корзине в
+ * браузере. Кто её вызывает на сервере — тот и передаёт актуальный стоп-лист.
+ */
 export function priceOrder(
   lines: { itemId: string; quantity: number }[],
   fulfillment: Fulfillment,
+  unavailable?: Map<string, string>,
 ): PricedOrder {
   const quote = quoteOrder(lines, fulfillment);
+
+  if (unavailable && unavailable.size > 0) {
+    const stopped = quote.lines.filter((line) => unavailable.has(line.item.id));
+    if (stopped.length > 0) {
+      const names = stopped.map((line) => `«${line.item.name}»`).join(", ");
+      throw new OrderError(
+        stopped.length === 1
+          ? `${names} на сегодня закончилось. Уберите из корзины или выберите замену.`
+          : `Закончились: ${names}. Уберите их из корзины или выберите замену.`,
+      );
+    }
+  }
 
   if (fulfillment === "delivery" && quote.subtotal < RESTAURANT.delivery.minOrder) {
     throw new OrderError(

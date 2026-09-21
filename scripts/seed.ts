@@ -14,8 +14,11 @@ import { createOrder } from "../src/lib/db/orders";
 import { getDb } from "../src/lib/db/client";
 import { normalizePhone } from "../src/lib/phone";
 import type { OrderStatus } from "../src/lib/status";
+import { CUSTOMER_TAGS } from "../src/lib/tags";
+import { RESERVATION_AREAS } from "../src/lib/reservation";
 
 const DAYS = 60;
+const RESTAURANT_TZ = process.env.RESTAURANT_TZ ?? "Europe/Moscow";
 
 /*
  * Имена и фамилии согласованы по роду: иначе генератор выдаёт «Юлия Ваулин»,
@@ -241,8 +244,15 @@ async function main() {
       );
       process.exit(1);
     }
-    // Порядок важен: order_lines и order_events уедут каскадом за orders.
-    await db.exec(`delete from orders; delete from customers;`);
+    /*
+     * Порядок важен: order_lines, order_events, заметки и метки уедут каскадом за
+     * orders и customers. Брони и стоп-лист каскадом не уезжают — у них нет
+     * внешнего ключа на гостя, поэтому их надо удалить отдельно, иначе при каждом
+     * повторном сиде брони удваиваются.
+     */
+    await db.exec(
+      `delete from orders; delete from customers; delete from reservations; delete from menu_availability;`,
+    );
     console.info("Старые заказы удалены (--force)");
   }
 
@@ -281,6 +291,93 @@ async function main() {
     if (await placeOrder(createdAt, live[i]!)) created += 1;
   }
 
+  /*
+   * Метки, заметки, брони и пара позиций в стоп-листе: без них новые экраны
+   * выглядят как пустые заготовки, и проверить их нечем.
+   */
+  const phones = await db.query<{ phone: string; name: string; orders: number }>(
+    `select c.phone, c.name, count(o.id)::int as orders
+     from customers c join orders o on o.customer_phone = c.phone
+     group by c.phone, c.name
+     order by orders desc
+     limit 24`,
+  );
+
+  const NOTES = [
+    "Аллергия на орехи — предупредить кухню",
+    "Просит стол у окна",
+    "В прошлый раз ждал час, извинились и дали десерт",
+    "Всегда просит счёт отдельно",
+    "Приходит с собакой, сажаем на террасу",
+    "Не любит острое, даже слегка",
+    "Оставляет чай наличными, готовить сдачу",
+  ];
+
+  for (const [index, guest] of phones.entries()) {
+    // Постоянных помечаем, остальным ставим метки через одного.
+    if (guest.orders >= 4) {
+      await db.query(
+        `insert into customer_tags (phone, tag) values ($1, 'regular') on conflict do nothing`,
+        [guest.phone],
+      );
+    }
+    if (index % 5 === 0) {
+      const tag = CUSTOMER_TAGS[(index / 5) % CUSTOMER_TAGS.length]!;
+      await db.query(
+        `insert into customer_tags (phone, tag) values ($1, $2) on conflict do nothing`,
+        [guest.phone, tag.id],
+      );
+    }
+    if (index % 3 === 0) {
+      await db.query(`insert into customer_notes (phone, text) values ($1, $2)`, [
+        guest.phone,
+        NOTES[index % NOTES.length]!,
+      ]);
+    }
+  }
+
+  const reservationStatuses = ["new", "confirmed", "confirmed", "seated", "cancelled"] as const;
+  let reservations = 0;
+
+  for (let i = 0; i < 14; i += 1) {
+    const guest = phones[i % phones.length];
+    if (!guest) break;
+
+    // Половина броней в будущем, половина уже прошла.
+    const dayShift = i < 8 ? Math.floor(i / 2) : -(i - 6);
+    const when = new Date(now);
+    when.setUTCDate(when.getUTCDate() + dayShift);
+    const hour = 18 + (i % 4);
+
+    await db.query(
+      `insert into reservations (guest_name, phone, at, guests, area, comment, status)
+       values ($1, $2, (($3::text || ' ' || $4::text)::timestamp at time zone $5::text), $6, $7, $8, $9)`,
+      [
+        guest.name,
+        guest.phone,
+        when.toISOString().slice(0, 10),
+        `${String(hour).padStart(2, "0")}:${i % 2 === 0 ? "00" : "30"}:00`,
+        RESTAURANT_TZ,
+        2 + (i % 5),
+        i % 3 === 0 ? RESERVATION_AREAS[i % RESERVATION_AREAS.length]! : "",
+        i % 4 === 0 ? "День рождения, нужна свеча" : "",
+        dayShift < 0 ? "seated" : reservationStatuses[i % reservationStatuses.length]!,
+      ],
+    );
+    reservations += 1;
+  }
+
+  // Стоп-лист: два блюда, как это и бывает к концу вечера.
+  for (const itemId of ["vongole", "ossobuco"]) {
+    if (!MENU.some((item) => item.id === itemId)) continue;
+    await db.query(
+      `insert into menu_availability (item_id, available, reason)
+       values ($1, false, $2)
+       on conflict (item_id) do update set available = false, reason = excluded.reason`,
+      [itemId, itemId === "vongole" ? "закончились мидии" : "закончилась голяшка"],
+    );
+  }
+
   const [summary] = await db.query<{ orders: number; revenue: number; customers: number }>(
     `select count(*)::int as orders,
             coalesce(sum(total) filter (where status <> 'cancelled'), 0)::int as revenue,
@@ -289,7 +386,8 @@ async function main() {
   );
 
   console.info(
-    `Готово: ${created} заказов, ${summary!.customers} клиентов, выручка ${summary!.revenue} ₽ за ${DAYS} дней.`,
+    `Готово: ${created} заказов, ${summary!.customers} гостей, ${reservations} броней, ` +
+      `выручка ${summary!.revenue} ₽ за ${DAYS} дней.`,
   );
   process.exit(0);
 }

@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 
 /** Внешняя оболочка админки: только фон. Проверка входа — в группе (panel). */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  return <div className="min-h-dvh bg-panel text-ink">{children}</div>;
+  return <div className="admin min-h-dvh bg-panel text-ink">{children}</div>;
 }

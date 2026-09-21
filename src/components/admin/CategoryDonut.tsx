@@ -33,14 +33,16 @@ export function CategoryDonut({
   let offset = 0;
 
   return (
-    <section className="rounded-3xl bg-white p-5 shadow-[0_18px_50px_-40px_rgba(34,29,23,0.55)]">
+    <section className="@container rounded-2xl border border-line bg-white p-5">
       <h2 className="text-base font-semibold">Продажи по категориям</h2>
-      <p className="text-xs text-slate">доля в выручке за период</p>
+      <p className="text-xs text-ink-muted">доля в выручке за период</p>
 
       {slices.length === 0 ? (
         <p className="mt-6 text-sm text-ink-soft">За период нет ни одного выданного заказа.</p>
       ) : (
-        <div className="mt-4 flex flex-col items-center gap-5 sm:flex-row sm:items-center">
+        // Контейнерные запросы, а не ширина окна: карточка живёт и в треть экрана,
+        // и на всю ширину — легенда решает по своей ширине, а не по чужой.
+        <div className="mt-4 flex flex-col items-center gap-5 @md:flex-row @md:items-center">
           <div className="relative shrink-0" style={{ width: SIZE, height: SIZE }}>
             <svg
               viewBox={`0 0 ${SIZE} ${SIZE}`}
@@ -73,7 +75,9 @@ export function CategoryDonut({
                       onMouseLeave={() =>
                         setHovered((current) => (current === slice.id ? null : current))
                       }
-                      style={{ transition: "stroke-width 120ms, opacity 120ms" }}
+                      // Анимируем только прозрачность: толщину сегмента меняем сразу,
+                      // чтобы не гонять геометрию через переход.
+                      style={{ transition: "opacity 120ms" }}
                     />
                   );
                 })}
@@ -84,7 +88,7 @@ export function CategoryDonut({
               <span className="text-lg leading-none font-semibold tracking-tight">
                 {money(total)}
               </span>
-              <span className="mt-1 text-[11px] text-slate">за период</span>
+              <span className="mt-1 text-[11px] text-ink-muted">по позициям</span>
             </div>
           </div>
 
@@ -94,7 +98,7 @@ export function CategoryDonut({
               <li
                 key={slice.id}
                 className={`flex items-center gap-2 rounded-lg px-2 py-1 transition ${
-                  hovered === slice.id ? "bg-panel" : ""
+                  hovered === slice.id ? "bg-tint" : ""
                 }`}
                 onMouseEnter={() => setHovered(slice.id)}
                 onMouseLeave={() =>
@@ -106,11 +110,11 @@ export function CategoryDonut({
                   className="h-2.5 w-2.5 shrink-0 rounded-sm"
                   style={{ backgroundColor: seriesColor(index) }}
                 />
-                <span className="min-w-0 flex-1 truncate text-ink-soft">{slice.title}</span>
+                <span className="min-w-[6rem] flex-1 truncate text-ink-soft">{slice.title}</span>
                 <span className="shrink-0 font-semibold tabular-nums">
                   {percent(slice.share)}
                 </span>
-                <span className="w-20 shrink-0 text-right text-xs tabular-nums text-slate">
+                <span className="w-20 shrink-0 text-right text-xs tabular-nums text-ink-muted">
                   {money(slice.revenue)}
                 </span>
               </li>

@@ -1,51 +1,70 @@
-import { NavRail } from "./NavRail";
+import { SideNav, TopNav } from "./SideNav";
+import { MobilePrimary } from "./MobilePrimary";
+import { ButtonLink } from "./ui";
 import { logout } from "@/app/admin/actions";
 import { RESTAURANT } from "@/lib/restaurant";
 
-/** Дата в шапке — как в мокапе: «Сегодня, пн 22 сен». */
+/**
+ * Оболочка панели: слева подписанная навигация, справа рабочая колонка.
+ *
+ * Заголовок экрана несёт только имя и состояние. Надстрочной подписи с названием
+ * ресторана здесь нет намеренно: название уже стоит в логотипе слева, а кикер над
+ * заголовком — это подпись, которая повторяет соседнюю подпись.
+ */
 function today(): string {
-  const formatted = new Intl.DateTimeFormat("ru-RU", {
+  return new Intl.DateTimeFormat("ru-RU", {
     weekday: "short",
     day: "numeric",
-    month: "short",
+    month: "long",
     timeZone: RESTAURANT.timezone,
   }).format(new Date());
-
-  return `Сегодня, ${formatted}`;
 }
 
 export function Shell({
   title,
   subtitle,
   actions,
-  /** Номер заказа — идентификатор, а не название: антиква ему не идёт. */
   monoTitle = false,
   children,
 }: {
   title: string;
   subtitle?: string;
   actions?: React.ReactNode;
+  /** Номер заказа — идентификатор: цифры в нём должны стоять ровно. */
   monoTitle?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto flex max-w-[1400px] gap-4 p-4 md:p-6">
-      <aside className="sticky top-6 hidden h-[calc(100dvh-3rem)] w-20 shrink-0 flex-col items-center justify-between rounded-3xl bg-white py-5 shadow-[0_18px_50px_-40px_rgba(34,29,23,0.55)] md:flex">
-        <div className="flex flex-col items-center gap-5">
-          <span
-            aria-hidden="true"
-            className="display flex h-11 w-11 items-center justify-center rounded-2xl bg-basil text-lg text-white"
-          >
-            B
-          </span>
-          <NavRail />
+    <div className="mx-auto flex max-w-[1440px] gap-6 px-4 py-4 sm:px-6 lg:py-6">
+      <aside className="sticky top-6 hidden h-[calc(100dvh-3rem)] w-56 shrink-0 flex-col justify-between rounded-2xl border border-line bg-surface-2 p-4 lg:flex">
+        <div>
+          <div className="flex items-center gap-2.5 px-1 pb-5">
+            <span
+              aria-hidden="true"
+              className="grid h-9 w-9 place-items-center rounded-xl bg-accent text-base font-bold text-white"
+            >
+              B
+            </span>
+            <span className="text-sm leading-tight font-bold">
+              Osteria
+              <br />
+              Bellini
+            </span>
+          </div>
+
+          <SideNav />
+
+          <div className="mt-4 border-t border-line pt-4">
+            <ButtonLink href="/admin/orders/new" tone="primary" className="w-full">
+              Новый заказ
+            </ButtonLink>
+          </div>
         </div>
 
         <form action={logout}>
           <button
             type="submit"
-            title="Выйти"
-            className="flex h-11 w-11 items-center justify-center rounded-2xl text-slate transition hover:bg-terracotta/10 hover:text-terracotta"
+            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-ink-muted transition hover:bg-warn-tint hover:text-warn"
           >
             <svg
               viewBox="0 0 24 24"
@@ -54,63 +73,38 @@ export function Shell({
               strokeWidth="1.6"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="h-5 w-5"
+              className="h-[1.125rem] w-[1.125rem]"
               aria-hidden="true"
             >
               <path d="M15 17l5-5-5-5M20 12H9M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h5" />
             </svg>
-            <span className="sr-only">Выйти</span>
+            Выйти
           </button>
         </form>
       </aside>
 
       <div className="min-w-0 flex-1 space-y-4">
-        <header className="flex flex-wrap items-center justify-between gap-3 rounded-3xl bg-white px-5 py-4 shadow-[0_18px_50px_-40px_rgba(34,29,23,0.55)]">
+        <header className="flex flex-wrap items-end justify-between gap-3">
           <div className="min-w-0">
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate">
-              {RESTAURANT.name}
-            </p>
             <h1
-              className={`truncate text-2xl leading-tight ${
-                monoTitle ? "font-semibold tracking-tight tabular-nums" : "display"
+              className={`truncate text-[1.375rem] leading-tight font-bold ${
+                monoTitle ? "tabular-nums tracking-tight" : ""
               }`}
             >
               {title}
             </h1>
-            {subtitle ? <p className="mt-0.5 text-sm text-ink-soft">{subtitle}</p> : null}
+            {subtitle ? <p className="mt-1 text-sm text-ink-soft">{subtitle}</p> : null}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {actions}
-            <span className="hidden rounded-full bg-panel px-3 py-1.5 text-sm font-medium text-ink-soft sm:inline">
-              {today()}
-            </span>
+            <span className="hidden text-sm text-ink-muted sm:inline">{today()}</span>
           </div>
         </header>
 
-        {/* Мобильная навигация: рельса слева спрятана, ссылки нужны всё равно. */}
-        <div className="flex gap-2 md:hidden">
-          <a
-            href="/admin"
-            className="flex-1 rounded-2xl bg-white px-4 py-2 text-center text-sm font-medium shadow-sm"
-          >
-            Сводка
-          </a>
-          <a
-            href="/admin/orders"
-            className="flex-1 rounded-2xl bg-white px-4 py-2 text-center text-sm font-medium shadow-sm"
-          >
-            Заказы
-          </a>
-          <form action={logout} className="shrink-0">
-            <button
-              type="submit"
-              className="rounded-2xl bg-white px-4 py-2 text-sm font-medium text-terracotta shadow-sm"
-            >
-              Выйти
-            </button>
-          </form>
-        </div>
+        <TopNav />
+
+        <MobilePrimary />
 
         {children}
       </div>

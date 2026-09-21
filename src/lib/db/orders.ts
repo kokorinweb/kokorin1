@@ -3,7 +3,14 @@
  * страницы админки и API-роуты работают только с функциями отсюда.
  */
 import { getDb, isUniqueViolation, toDate } from "./client";
-import { makeOrderNumber, type Fulfillment, type OrderInput, type PricedOrder } from "../order";
+import {
+  SOURCE_LABEL,
+  makeOrderNumber,
+  type Fulfillment,
+  type OrderInput,
+  type OrderSource,
+  type PricedOrder,
+} from "../order";
 import { canTransition, isOrderStatus, statusGroup, type OrderStatus } from "../status";
 import { normalizePhone } from "../phone";
 
@@ -103,7 +110,7 @@ const LIST_SELECT = `
 export async function createOrder(params: {
   input: OrderInput;
   priced: PricedOrder;
-  source?: "site" | "telegram";
+  source?: OrderSource;
   /** Только для сида демо-данных: реальный заказ всегда создаётся «сейчас». */
   createdAt?: Date;
   status?: OrderStatus;
@@ -111,7 +118,7 @@ export async function createOrder(params: {
   const db = await getDb();
   const { input, priced } = params;
   const phone = normalizePhone(input.phone);
-  const source = params.source ?? "site";
+  const source: OrderSource = params.source ?? "site";
   const status = params.status ?? "new";
   const createdAt = params.createdAt ?? new Date();
 
@@ -176,7 +183,7 @@ export async function createOrder(params: {
         await tx.query(
           `insert into order_events (order_id, from_status, to_status, actor, created_at)
            values ($1, null, $2, $3, $4)`,
-          [orderId, status, source === "site" ? "сайт" : "телеграм", createdAt],
+          [orderId, status, SOURCE_LABEL[source], createdAt],
         );
 
         const [row] = await tx.query<OrderDbRow>(`${LIST_SELECT} where o.id = $1`, [orderId]);
@@ -194,9 +201,12 @@ export async function createOrder(params: {
 
 export type OrderListFilters = {
   group?: string;
-  /** Номер заказа, имя или телефон — одно поле поиска, как в мокапе. */
+  /** Номер заказа, имя или телефон — одно поле поиска. */
   q?: string;
   fulfillment?: Fulfillment;
+  /** Все заказы одного гостя — для его карточки. */
+  phone?: string;
+  source?: OrderSource;
   page?: number;
   perPage?: number;
 };
@@ -222,6 +232,16 @@ function buildWhere(filters: OrderListFilters): { sql: string; params: unknown[]
   if (filters.fulfillment) {
     params.push(filters.fulfillment);
     clauses.push(`o.fulfillment = $${params.length}`);
+  }
+
+  if (filters.phone) {
+    params.push(filters.phone);
+    clauses.push(`o.customer_phone = $${params.length}`);
+  }
+
+  if (filters.source) {
+    params.push(filters.source);
+    clauses.push(`o.source = $${params.length}`);
   }
 
   const q = filters.q?.trim();

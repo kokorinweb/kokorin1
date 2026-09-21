@@ -47,6 +47,9 @@ export type CategorySlice = {
 
 export type DishRow = { itemId: string; itemName: string; quantity: number; revenue: number };
 
+/** Откуда пришли заказы за период: сайт, телеграм, телефон. */
+export type ChannelRow = { source: string; orders: number; revenue: number };
+
 export type Dashboard = {
   period: { id: string; title: string; days: number; from: Date; to: Date };
   current: Totals;
@@ -56,6 +59,7 @@ export type Dashboard = {
   series: SeriesPoint[];
   byCategory: CategorySlice[];
   topDishes: DishRow[];
+  channels: ChannelRow[];
   /** Сколько заказов прямо сейчас требуют действия — без привязки к периоду. */
   pendingNew: number;
   inProgress: number;
@@ -117,7 +121,7 @@ export async function loadDashboard(periodId: string | undefined): Promise<Dashb
   const prevFrom = toDate(bounds!.prev_from);
   const prevTo = toDate(bounds!.prev_to);
 
-  const [[current], [previous], seriesRows, byCategoryRows, topRows, [customers]] =
+  const [[current], [previous], seriesRows, byCategoryRows, topRows, channelRows, [customers]] =
     await Promise.all([
       db.query<{ orders: number; revenue: number; cancelled: number; customers: number }>(
         TOTALS_SQL,
@@ -184,6 +188,16 @@ export async function loadDashboard(periodId: string | undefined): Promise<Dashb
          limit 5`,
         [curFrom, curTo],
       ),
+      db.query<{ source: string; orders: number; revenue: number }>(
+        `select o.source,
+                count(*)::int                  as orders,
+                coalesce(sum(o.total), 0)::int as revenue
+         from orders o
+         where o.created_at >= $1 and o.created_at < $2 and o.status <> 'cancelled'
+         group by o.source
+         order by orders desc`,
+        [curFrom, curTo],
+      ),
       db.query<{ total: number; repeat: number }>(
         `select
            count(*)::int                             as total,
@@ -234,6 +248,7 @@ export async function loadDashboard(periodId: string | undefined): Promise<Dashb
       quantity: row.quantity,
       revenue: row.revenue,
     })),
+    channels: channelRows,
     pendingNew: countOf(["new"]),
     inProgress: countOf(["new", "accepted", "cooking", "on_way", "ready"]),
     repeatCustomers: customers?.repeat ?? 0,

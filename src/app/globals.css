@@ -14,11 +14,35 @@
   --font-display: var(--font-serif), Georgia, "Times New Roman", serif;
   --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 
-  /* Админка: нейтральные поверхности. Кремовая бумага сайта здесь мешает —
-     менеджеру нужен контраст под таблицу на восемь часов смены, а не атмосфера. */
-  --color-panel: #f4f5f8;
-  --color-line: #e6e8ef;
-  --color-slate: #6b7280;
+  /*
+     Панель заказов — светлая, одна тема, без тёмных плашек: владелец работает
+     днём с ноутбука в зале. Нейтрали тёплые, а не серые: панель должна выглядеть
+     частью того же заведения, что и кремовая витрина, а не чужой админкой.
+     Все пары «текст на заливке» проверены на контраст, минимум 4.5:1.
+  */
+  --color-panel: #f6f5f1;
+  --color-surface-2: #fbfaf6;
+  --color-tint: #f1efe8;
+  --color-line: #e6e2d8;
+  --color-ink-muted: #756c5d;
+
+  --color-accent: #2f7d55;
+  --color-accent-strong: #256345;
+  --color-accent-tint: #e6f1ea;
+
+  --color-warn: #a8452c;
+  --color-warn-tint: #fbeae5;
+
+  --color-gold-ink: #8a6316;
+  --color-gold-tint: #fdf3dd;
+
+  --color-violet: #6b4fa8;
+  --color-violet-ink: #54398f;
+  --color-violet-tint: #ece6f8;
+
+  --color-blue: #2f7ec2;
+  --color-blue-ink: #1f5580;
+  --color-blue-tint: #e4eef8;
 
   /* Категориальная палитра графиков. Не подбиралась на глаз: прогнана через
      валидатор на светлой поверхности — полоса светлоты, порог насыщенности,
@@ -81,5 +105,73 @@ body {
   }
   html {
     scroll-behavior: auto;
+  }
+}
+
+/*
+ * Панель заказов: то, что мы не рисовали, тоже часть дизайна.
+ * Выделение текста, каретка, полосы прокрутки и фокусная рамка по умолчанию
+ * принадлежат браузеру и ничему больше — красим их токенами.
+ */
+.admin {
+  --focus: var(--color-accent);
+  scrollbar-color: var(--color-line) transparent;
+  scrollbar-width: thin;
+}
+
+.admin ::selection {
+  background-color: color-mix(in srgb, var(--color-accent) 22%, transparent);
+  color: var(--color-ink);
+}
+
+.admin input,
+.admin textarea {
+  caret-color: var(--color-accent);
+}
+
+.admin :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.admin ::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.admin ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin ::-webkit-scrollbar-thumb {
+  background-color: var(--color-line);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+
+.admin ::-webkit-scrollbar-thumb:hover {
+  background-color: color-mix(in srgb, var(--color-ink-muted) 45%, transparent);
+}
+
+/* Строка, у которой только что сменился статус: единственный авторский момент
+   в панели. Глаз должен найти её после действия, не перечитывая таблицу. */
+@keyframes admin-touched {
+  from {
+    background-color: color-mix(in srgb, var(--color-accent) 16%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+.admin-touched {
+  animation: admin-touched 1.4s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-touched {
+    animation: none;
   }
 }

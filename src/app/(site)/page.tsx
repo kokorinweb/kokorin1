@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { DishCard } from "@/components/DishCard";
 import { featuredItems } from "@/lib/menu";
+import { unavailableItemsSafe } from "@/lib/db/availability";
 import { RESTAURANT } from "@/lib/restaurant";
 
 const STORY = [
@@ -18,9 +19,13 @@ const STORY = [
   },
 ];
 
-export default function HomePage() {
+// Блок «Рекомендуем» читает стоп-лист, поэтому главная динамическая.
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
   const d = RESTAURANT.delivery;
   const featured = featuredItems();
+  const unavailable = await unavailableItemsSafe();
 
   return (
     <>
@@ -92,7 +97,7 @@ export default function HomePage() {
 
         <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {featured.map((item) => (
-            <DishCard key={item.id} item={item} />
+            <DishCard key={item.id} item={item} stopReason={unavailable.get(item.id) ?? null} />
           ))}
         </div>
       </section>

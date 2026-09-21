@@ -37,18 +37,18 @@ export default async function OrderPage({ params }: { params: Promise<{ number: 
         />
       }
     >
-      <Link href="/admin/orders" className="text-sm text-slate underline hover:text-ink">
+      <Link href="/admin/orders" className="text-sm text-ink-muted underline hover:text-ink">
         ← Ко всем заказам
       </Link>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <section className="overflow-hidden rounded-3xl bg-white shadow-[0_18px_50px_-40px_rgba(34,29,23,0.55)]">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+        <section className="overflow-hidden rounded-2xl border border-line bg-white">
           <h2 className="px-5 pt-5 text-base font-semibold">Состав заказа</h2>
           {/* Цены — снапшот на момент заказа, а не текущие из меню. */}
-          <p className="px-5 pb-3 text-xs text-slate">цены на момент оформления</p>
+          <p className="px-5 pb-3 text-xs text-ink-muted">цены на момент оформления</p>
 
           <table className="w-full text-left text-sm">
-            <thead className="bg-panel text-xs font-semibold uppercase tracking-wide text-slate">
+            <thead className="bg-tint text-[11px] font-bold uppercase tracking-wide text-ink-muted">
               <tr>
                 <th className="px-5 py-2">Блюдо</th>
                 <th className="px-3 py-2 text-right">Цена</th>
@@ -61,7 +61,7 @@ export default async function OrderPage({ params }: { params: Promise<{ number: 
                 <tr key={line.itemId} className="border-t border-line">
                   <td className="px-5 py-2.5">
                     <p className="font-medium">{line.itemName}</p>
-                    <p className="text-[11px] text-slate">{categoryTitle(line.category)}</p>
+                    <p className="text-[11px] text-ink-muted">{categoryTitle(line.category)}</p>
                   </td>
                   <td className="px-3 py-2.5 text-right tabular-nums text-ink-soft">
                     {money(line.unitPrice)}
@@ -81,7 +81,7 @@ export default async function OrderPage({ params }: { params: Promise<{ number: 
               <dd className="tabular-nums">{money(order.subtotal)}</dd>
             </div>
             {order.discount > 0 ? (
-              <div className="flex justify-between text-basil">
+              <div className="flex justify-between text-accent-strong">
                 <dt>Скидка за самовывоз {RESTAURANT.pickup.discountPercent}%</dt>
                 <dd className="tabular-nums">−{money(order.discount)}</dd>
               </div>
@@ -100,26 +100,26 @@ export default async function OrderPage({ params }: { params: Promise<{ number: 
         </section>
 
         <div className="space-y-4">
-          <section className="rounded-3xl bg-white p-5 shadow-[0_18px_50px_-40px_rgba(34,29,23,0.55)]">
+          <section className="rounded-2xl border border-line bg-white p-5">
             <h2 className="text-base font-semibold">Гость</h2>
             <dl className="mt-3 space-y-2 text-sm">
               <div>
-                <dt className="text-xs text-slate">Имя</dt>
+                <dt className="text-xs text-ink-muted">Имя</dt>
                 <dd className="font-medium">{order.customerName}</dd>
               </div>
               <div>
-                <dt className="text-xs text-slate">Телефон</dt>
+                <dt className="text-xs text-ink-muted">Телефон</dt>
                 <dd>
                   <a
                     href={`tel:${order.customerPhone}`}
-                    className="font-medium tabular-nums hover:text-basil hover:underline"
+                    className="font-medium tabular-nums hover:text-accent hover:underline"
                   >
                     {formatPhone(order.customerPhone)}
                   </a>
                 </dd>
               </div>
               <div>
-                <dt className="text-xs text-slate">Способ</dt>
+                <dt className="text-xs text-ink-muted">Способ</dt>
                 <dd className="font-medium">
                   {order.fulfillment === "delivery"
                     ? `Доставка · ${order.etaMinutes} мин`
@@ -128,20 +128,20 @@ export default async function OrderPage({ params }: { params: Promise<{ number: 
               </div>
               {order.address ? (
                 <div>
-                  <dt className="text-xs text-slate">Адрес</dt>
+                  <dt className="text-xs text-ink-muted">Адрес</dt>
                   <dd className="font-medium">{order.address}</dd>
                 </div>
               ) : null}
               {order.comment ? (
                 <div>
-                  <dt className="text-xs text-slate">Комментарий</dt>
-                  <dd className="rounded-xl bg-gold/10 px-3 py-2 text-[#7a5612]">
+                  <dt className="text-xs text-ink-muted">Комментарий</dt>
+                  <dd className="rounded-xl bg-gold-tint px-3 py-2 text-gold-ink">
                     {order.comment}
                   </dd>
                 </div>
               ) : null}
               <div>
-                <dt className="text-xs text-slate">Откуда пришёл</dt>
+                <dt className="text-xs text-ink-muted">Откуда пришёл</dt>
                 <dd className="font-medium">
                   {order.source === "telegram" ? "Телеграм-бот" : "Сайт"}
                 </dd>
@@ -149,9 +149,9 @@ export default async function OrderPage({ params }: { params: Promise<{ number: 
             </dl>
           </section>
 
-          <section className="rounded-3xl bg-white p-5 shadow-[0_18px_50px_-40px_rgba(34,29,23,0.55)]">
+          <section className="rounded-2xl border border-line bg-white p-5">
             <h2 className="text-base font-semibold">История</h2>
-            <p className="text-xs text-slate">кто и когда двигал заказ</p>
+            <p className="text-xs text-ink-muted">кто и когда двигал заказ</p>
 
             <ol className="mt-4 space-y-3 text-sm">
               {events.map((event, index) => (
@@ -162,7 +162,7 @@ export default async function OrderPage({ params }: { params: Promise<{ number: 
                   />
                   <div className="min-w-0">
                     <p className="font-medium">{STATUS_META[event.toStatus].label}</p>
-                    <p className="text-xs text-slate tabular-nums">
+                    <p className="text-xs text-ink-muted tabular-nums">
                       {moment(event.createdAt)} · {event.actor}
                     </p>
                   </div>

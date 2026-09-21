@@ -29,30 +29,31 @@ export function StatTile({
 
   return (
     <div
-      className={`flex flex-col justify-between gap-6 rounded-3xl p-5 ${
-        accent
-          ? "bg-basil text-white shadow-[0_24px_60px_-40px_rgba(47,93,63,0.9)]"
-          : "bg-white shadow-[0_18px_50px_-40px_rgba(34,29,23,0.55)]"
+      className={`flex flex-col justify-between gap-5 rounded-2xl border p-5 ${
+        accent ? "border-accent/25 bg-accent-tint" : "border-line bg-white"
       }`}
     >
-      <p className={`text-sm font-medium ${accent ? "text-white/80" : "text-ink-soft"}`}>
+      <p className={`text-sm font-semibold ${accent ? "text-accent-strong" : "text-ink-soft"}`}>
         {label}
       </p>
 
       <div>
         <div className="flex flex-wrap items-baseline gap-2">
-          {/* Заглавное число — тем же sans, что и всё остальное, и без tabular-nums. */}
-          <span className="text-3xl leading-none font-semibold tracking-tight">{value}</span>
+          {/* Крупное число — тем же sans, что и всё остальное, и без tabular-nums:
+              равноширинные цифры на этом кегле выглядят разреженными. */}
+          <span
+            className={`text-[1.875rem] leading-none font-bold tracking-tight ${
+              accent ? "text-accent-strong" : ""
+            }`}
+          >
+            {value}
+          </span>
 
           {change !== null ? (
             <span
-              className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                accent
-                  ? "bg-white/15 text-white"
-                  : good
-                    ? "bg-basil/10 text-basil"
-                    : "bg-terracotta/10 text-terracotta"
-              }`}
+              className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${
+                good ? "bg-accent-tint text-accent-strong" : "bg-warn-tint text-warn"
+              } ${accent && good ? "bg-white/70" : ""}`}
             >
               {change > 0 ? "+" : ""}
               {change.toLocaleString("ru-RU")}%
@@ -60,7 +61,7 @@ export function StatTile({
           ) : null}
         </div>
 
-        <p className={`mt-1.5 text-xs ${accent ? "text-white/70" : "text-slate"}`}>
+        <p className={`mt-1.5 text-[11px] ${accent ? "text-accent-strong/75" : "text-ink-muted"}`}>
           {hint ?? (change === null ? "нет данных за прошлый период" : "к прошлому периоду")}
         </p>
       </div>
