@@ -9,6 +9,8 @@ export const RESTAURANT = {
   phoneHref: "+74951234567",
   email: "ciao@osteria-bellini.ru",
   telegram: "https://t.me/osteria_bellini_bot",
+  /** Часовой пояс заведения: по нему считаются сутки в отчётах и рисуются даты. */
+  timezone: "Europe/Moscow",
   hours: [
     { days: "Пн — Чт", time: "12:00 — 23:00" },
     { days: "Пт — Сб", time: "12:00 — 01:00" },

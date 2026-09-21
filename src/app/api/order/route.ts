@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { OrderError, makeOrderNumber, orderSchema, priceOrder } from "@/lib/order";
 import { notifyNewOrder } from "@/lib/telegram";
 import { clientIp, rateLimit } from "@/lib/ratelimit";
+import { createOrder } from "@/lib/db/orders";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -44,7 +45,20 @@ export async function POST(request: Request) {
     throw error;
   }
 
-  const orderNumber = makeOrderNumber();
+  /*
+   * Заказ сохраняем до уведомления, но падение базы заказ не отменяет:
+   * потерять живого клиента из-за недоступной CRM хуже, чем потерять строку
+   * в таблице. Уведомление в рабочий чат уйдёт всё равно, и менеджер заказ
+   * увидит — телеграм здесь работает резервным каналом.
+   */
+  let orderNumber: string;
+  try {
+    const saved = await createOrder({ input, priced, source: "site" });
+    orderNumber = saved.number;
+  } catch (error) {
+    console.error("[api/order] заказ не записался в базу:", error);
+    orderNumber = makeOrderNumber();
+  }
 
   try {
     await notifyNewOrder(orderNumber, input, priced);

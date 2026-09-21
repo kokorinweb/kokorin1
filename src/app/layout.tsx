@@ -1,10 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Cormorant_Garamond, Manrope } from "next/font/google";
 import "./globals.css";
-import { CartProvider } from "@/components/CartContext";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { ChatWidget } from "@/components/ChatWidget";
 import { RESTAURANT } from "@/lib/restaurant";
 
 const serif = Cormorant_Garamond({
@@ -38,17 +34,15 @@ export const viewport: Viewport = {
   themeColor: "#fbf7f0",
 };
 
+/**
+ * Корневой layout держит только то, что общее у сайта и админки: html, шрифты,
+ * стили. Шапка с корзиной и подвал переехали в группу (site) — в админке
+ * они не нужны.
+ */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ru" className={`${serif.variable} ${sans.variable}`}>
-      <body className="paper flex min-h-dvh flex-col">
-        <CartProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <ChatWidget />
-        </CartProvider>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
