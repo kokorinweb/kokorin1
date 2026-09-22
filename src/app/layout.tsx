@@ -1,53 +1,70 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Akt, Golos_Text } from "next/font/google";
 import "./globals.css";
-import { CartProvider } from "@/components/CartContext";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
-import { ChatWidget } from "@/components/ChatWidget";
-import { RESTAURANT } from "@/lib/restaurant";
+import { SmoothScroll } from "@/components/SmoothScroll";
+import { site } from "@/content/site";
 
-const serif = Cormorant_Garamond({
+// Akt — кириллический гротеск Дмитрия Гренева. Переменная ось веса даёт
+// контраст между сверхтонким и чёрным начертанием без второй гарнитуры.
+const akt = Akt({
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "600", "700"],
-  variable: "--font-serif",
+  variable: "--font-akt",
   display: "swap",
 });
 
-const sans = Manrope({
+const golos = Golos_Text({
   subsets: ["latin", "cyrillic"],
-  variable: "--font-body",
+  variable: "--font-golos",
   display: "swap",
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(site.url),
   title: {
-    default: `${RESTAURANT.name} — ${RESTAURANT.tagline}`,
-    template: `%s · ${RESTAURANT.name}`,
+    default: `${site.brand} — сайты и автоматизация для бизнеса`,
+    template: `%s · ${site.brand}`,
   },
-  description: `Итальянский ресторан в центре Москвы: паста ручной работы, пицца на дровах, доставка ${RESTAURANT.delivery.zone}.`,
+  description:
+    "Создаю сайты и автоматизации, которые понятно объясняют ценность бизнеса, собирают заявки и уверенно работают после запуска.",
   openGraph: {
-    title: `${RESTAURANT.name} — ${RESTAURANT.tagline}`,
-    description: "Паста ручной работы, неаполитанская пицца на дровах, доставка и самовывоз.",
+    title: `${site.brand} — сайты и автоматизация для бизнеса`,
+    description:
+      "Разработка сайтов, интернет-магазины, ИИ-ассистенты, Telegram-боты и автоматизация заявок.",
     locale: "ru_RU",
     type: "website",
   },
+  alternates: { canonical: "/" },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fbf7f0",
+  themeColor: "#07070a",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${serif.variable} ${sans.variable}`}>
-      <body className="paper flex min-h-dvh flex-col">
-        <CartProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <ChatWidget />
-        </CartProvider>
+    <html lang="ru" className={`${akt.variable} ${golos.variable}`}>
+      <head>
+        {/*
+          Ставим флаг js до первой отрисовки: правила появления секций висят
+          на html.js, поэтому без скрипта контент просто виден, а со скриптом
+          нет вспышки уже показанного блока.
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `document.documentElement.classList.add('js')`,
+          }}
+        />
+      </head>
+      <body>
+        <SmoothScroll />
+        <a
+          href="#main"
+          className="btn btn-primary sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100]"
+        >
+          К содержимому
+        </a>
+        {children}
       </body>
     </html>
   );

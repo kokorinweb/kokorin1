@@ -1,8 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Telegram-вебхук и чат ИИ ходят наружу — держим их только на Node-рантайме.
-  serverExternalPackages: ["grammy", "@anthropic-ai/sdk"],
+  // Превью проектов — собственные SVG из public/. Оптимизатор изображений
+  // для них ничего не даёт (вектор и так масштабируется), поэтому они
+  // отдаются обычным тегом, а не next/image.
+  reactStrictMode: true,
 };
 
 export default nextConfig;
