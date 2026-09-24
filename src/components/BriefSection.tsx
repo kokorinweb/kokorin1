@@ -44,7 +44,7 @@ export function BriefSection({ aiEnabled }: { aiEnabled: boolean }) {
   }
 
   return (
-    <section id="brief" className="mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-28">
+    <section id="brief" className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:py-28">
       <header className="max-w-2xl">
         <p className="text-sm font-semibold uppercase tracking-[0.14em] text-walnut">Заявка</p>
         <h2 className="display mt-3 text-4xl leading-tight sm:text-5xl">

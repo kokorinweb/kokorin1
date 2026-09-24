@@ -40,10 +40,27 @@ export function Footer() {
           </p>
         </div>
 
-        <p className="mt-10 border-t border-line pt-6 text-xs text-ink-soft">
-          © {new Date().getFullYear()} {COMPANY.name}, {COMPANY.city}. Мебель по индивидуальным
-          размерам.
-        </p>
+        <div className="mt-10 space-y-2 border-t border-line pt-6 text-xs text-ink-soft">
+          <p>
+            © {new Date().getFullYear()} {COMPANY.name}, {COMPANY.city}. Мебель по индивидуальным
+            размерам.
+          </p>
+          {process.env.NEXT_PUBLIC_DEMO === "1" && (
+            <p>
+              Демонстрационный макет сайта. Не официальный сайт компании. Контакты взяты из
+              открытой{" "}
+              <a
+                href={COMPANY.mapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline decoration-line underline-offset-2"
+              >
+                карточки в Яндекс Картах
+              </a>
+              .
+            </p>
+          )}
+        </div>
       </div>
     </footer>
   );

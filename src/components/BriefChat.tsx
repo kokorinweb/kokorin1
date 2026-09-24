@@ -118,7 +118,7 @@ export function BriefChat({ aiEnabled }: { aiEnabled: boolean }) {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1.4fr_1fr]">
-      <div className="flex min-h-[28rem] flex-col overflow-hidden rounded-3xl border border-line bg-surface">
+      <div className="flex min-h-[22rem] flex-col overflow-hidden rounded-3xl border border-line bg-surface sm:min-h-[28rem]">
         <div className="flex items-center gap-2.5 border-b border-line px-5 py-3.5">
           <SparkIcon className="h-5 w-5 shrink-0 text-walnut" />
           <p className="min-w-0 flex-1 truncate text-sm font-semibold">Помощник по заказу</p>
@@ -141,8 +141,8 @@ export function BriefChat({ aiEnabled }: { aiEnabled: boolean }) {
 
         <div
           ref={logRef}
-          className="flex-1 space-y-3 overflow-y-auto px-5 py-5"
-          style={{ overscrollBehavior: "contain", maxHeight: "26rem" }}
+          className="max-h-[15rem] flex-1 space-y-3 overflow-y-auto px-4 py-4 sm:max-h-[26rem] sm:px-5 sm:py-5"
+          style={{ overscrollBehavior: "contain" }}
         >
           <ol className="space-y-3" aria-live="polite" aria-label="История разговора">
             {messages.map((message, index) => (

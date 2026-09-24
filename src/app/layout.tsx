@@ -31,6 +31,9 @@ export const metadata: Metadata = {
     locale: "ru_RU",
     type: "website",
   },
+  // Демо-сборку прячем от поисковиков: макет не должен всплывать в выдаче
+  // вместо настоящей компании.
+  robots: process.env.NEXT_PUBLIC_DEMO === "1" ? { index: false, follow: false } : undefined,
 };
 
 export const viewport: Viewport = {

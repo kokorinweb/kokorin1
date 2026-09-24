@@ -11,7 +11,7 @@ const FACTS = [
 export function Hero() {
   return (
     <section className="grain glow relative overflow-hidden border-b border-line">
-      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:pb-24 lg:pt-20">
+      <div className="mx-auto grid max-w-6xl items-center gap-12 px-4 pb-12 pt-10 sm:px-6 sm:pb-16 sm:pt-14 lg:grid-cols-[1.05fr_0.95fr] lg:gap-8 lg:pb-24 lg:pt-20">
         <div className="rise relative z-10">
           <p className="mb-5 inline-flex items-center gap-2 rounded-full border border-walnut/25 bg-surface/70 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-walnut">
             {COMPANY.city} и ближайшие районы

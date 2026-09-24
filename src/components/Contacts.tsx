@@ -12,7 +12,7 @@ export function Contacts() {
         }}
         aria-hidden="true"
       />
-      <div className="relative mx-auto max-w-6xl px-4 py-20 sm:px-6 lg:py-28">
+      <div className="relative mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-20 lg:py-28">
         <div className="grid gap-12 lg:grid-cols-2">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.14em] text-brass">Контакты</p>

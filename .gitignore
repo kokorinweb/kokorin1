@@ -11,3 +11,7 @@ next-env.d.ts
 
 .DS_Store
 npm-debug.log*
+
+# Статический экспорт для показа по ссылке
+out/
+out-pub/
