@@ -1,30 +1,25 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { CATEGORIES, MENU, formatPrice, getMenuItem } from "./menu";
-import { RESTAURANT, siteUrl } from "./restaurant";
+import { COMPANY, UNKNOWNS } from "./company";
+import { CATEGORIES } from "./catalog";
+import type { Brief } from "./brief";
+import { briefIsReady } from "./brief";
 
-export const AI_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-5";
-
-export type Channel = "web" | "telegram";
+export const AI_MODEL = process.env.ANTHROPIC_MODEL ?? "claude-opus-5";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 
-/** Действие, которое фронт должен выполнить после ответа ассистента. */
-export type AssistantAction =
-  | { type: "add_to_cart"; itemId: string; quantity: number }
-  | { type: "show_category"; category: string };
-
 export type AssistantReply = {
   text: string;
-  actions: AssistantAction[];
+  /** Бриф после хода: то, что было, плюс то, что модель записала. */
+  brief: Brief;
+  ready: boolean;
 };
 
 let client: Anthropic | null = null;
 
 function getClient(): Anthropic {
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error("ANTHROPIC_API_KEY не задан");
-  }
+  if (!apiKey) throw new Error("ANTHROPIC_API_KEY не задан");
   client ??= new Anthropic({ apiKey });
   return client;
 }
@@ -33,122 +28,84 @@ export function aiConfigured(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);
 }
 
-/**
- * Меню в компактном виде для контекста модели.
- * Отдаём весь список целиком: он маленький (~25 позиций), а RAG на таком объёме —
- * лишняя сложность и лишний источник ошибок.
- */
-function menuForPrompt(): string {
-  return CATEGORIES.map((category) => {
-    const lines = MENU.filter((item) => item.category === category.id).map((item) => {
-      const flags = [
-        item.vegetarian ? "вегетарианское" : null,
-        item.spicy ? "острое" : null,
-        item.allergens.length ? `аллергены: ${item.allergens.join(", ")}` : "без заявленных аллергенов",
-      ]
-        .filter(Boolean)
-        .join("; ");
-      return `- [${item.id}] ${item.name} (${item.nameIt}), ${formatPrice(item.price)}, ${item.portion}. ${item.description} ${flags}.`;
-    });
-    return `## ${category.title} — ${category.subtitle}\n${lines.join("\n")}`;
-  }).join("\n\n");
+function buildSystemPrompt(): string {
+  const catalog = CATEGORIES.map(
+    (category) => `- ${category.title}: ${category.blurb} Уточняем: ${category.asks.join(", ")}.`,
+  ).join("\n");
+
+  return `Ты — помощник на сайте компании «${COMPANY.name}», ${COMPANY.tagline.toLowerCase()}.
+
+Твоя работа — не консультировать, а собрать заявку. Мебель делается по индивидуальным размерам, поэтому менеджеру нужны вводные, а не общий вопрос «сколько стоит кухня». Ты задаёшь вопросы, записываешь ответы инструментом update_brief и передаёшь готовый бриф менеджеру в WhatsApp.
+
+НАПРАВЛЕНИЯ
+${catalog}
+
+ЧТО НУЖНО СОБРАТЬ
+Направление, помещение, размеры (хотя бы примерные), пожелания по виду и материалам, срок, имя и телефон. Телефон и направление обязательны, остальное — насколько клиент готов рассказать.
+
+ЧЕГО ТЫ НЕ ЗНАЕШЬ И НЕ ПРИДУМЫВАЕШЬ
+${UNKNOWNS.map((item) => `- ${item}`).join("\n")}
+Спросили про что-то из этого списка — честно отвечай, что это считает менеджер по конкретным размерам, и что он ответит в WhatsApp, как только увидит заявку. Не называй ни одной цифры, ни одного срока, ни одного бренда. Не обещай замер, выезд дизайнера и дизайн-проект: условий этих услуг у тебя нет.
+
+КОНТАКТЫ
+Адрес: ${COMPANY.address}. ${COMPANY.hours}. Телефон, WhatsApp и Viber — ${COMPANY.phone}.
+
+КАК ВЕСТИ ДИАЛОГ
+1. Один вопрос за сообщение. Два-три предложения, не больше. Живым языком, на «вы», без канцелярита.
+2. После каждого содержательного ответа вызывай update_brief и записывай то, что услышал, своими словами и аккуратно: «прямая 3,2 м, потолок 2,7», а не «клиент сообщил размеры».
+3. Не переспрашивай то, что уже записано в брифе.
+4. Клиент не знает размеров — это нормально, так и запиши: «точных размеров нет». Не настаивай.
+5. Клиент хочет сразу написать в WhatsApp или позвонить — не удерживай, дай номер ${COMPANY.phone}.
+6. Когда есть направление и телефон, вызови update_brief в последний раз и скажи, что заявка собрана и её можно отправить кнопкой ниже — откроется WhatsApp с уже готовым текстом. Не пиши сам текст заявки в чат: его соберёт сайт.
+7. Отвечай только про мебель и заказ. На постороннее коротко возвращай к теме.`;
 }
 
-function buildSystemPrompt(channel: Channel): string {
-  const hours = RESTAURANT.hours.map((h) => `${h.days}: ${h.time}`).join("; ");
-  const d = RESTAURANT.delivery;
-
-  const channelRules =
-    channel === "web"
-      ? `Ты работаешь в виджете чата на сайте. У тебя есть инструменты add_to_cart и show_category — пользуйся ими, когда гость просит что-то добавить или показать раздел меню. После вызова add_to_cart коротко подтверди словами, что добавил.`
-      : `Ты работаешь в Telegram-боте. Инструментов у тебя нет: собрать корзину и оформить заказ гость может на сайте ${siteUrl()} или по телефону ${RESTAURANT.phone}. Пиши обычным текстом, компактно, без Markdown и таблиц.`;
-
-  return `Ты — Лука, ИИ-консультант ресторана «${RESTAURANT.name}». ${RESTAURANT.tagline}.
-
-СВЕДЕНИЯ О ЗАВЕДЕНИИ
-Адрес: ${RESTAURANT.address} (${RESTAURANT.metro}).
-Телефон: ${RESTAURANT.phone}. Почта: ${RESTAURANT.email}.
-Часы работы: ${hours}.
-Доставка: ${d.zone}, минимальный заказ ${d.minOrder} ₽, стоимость ${d.fee} ₽, бесплатно от ${d.freeFrom} ₽, примерно ${d.etaMinutes} минут.
-Самовывоз: готовность примерно ${RESTAURANT.pickup.etaMinutes} минут, скидка ${RESTAURANT.pickup.discountPercent}%.
-
-МЕНЮ (полное, других блюд не существует)
-${menuForPrompt()}
-
-ПРАВИЛА
-1. Отвечай только на основании сведений выше. Если чего-то нет в меню — прямо скажи, что такого блюда нет, и предложи ближайшую альтернативу из меню.
-2. Никогда не выдумывай блюда, цены, состав, акции, наличие столиков и сроки. Цены называй ровно те, что указаны.
-3. Про аллергены отвечай только по полю «аллергены». Обязательно добавляй, что производство общее и следы других аллергенов возможны, а при серьёзной аллергии нужно предупредить менеджера по телефону ${RESTAURANT.phone}.
-4. Бронь столика, изменение или отмена заказа, жалобы, вопросы о вакансиях и всё, чего нет в твоих данных, — переводи на телефон ${RESTAURANT.phone}. Не обещай ничего от имени ресторана.
-5. Отвечай по-русски (или на языке гостя), тепло и по делу: 2–4 предложения, без канцелярита и без списка на пол-экрана, если гость сам не попросил подробностей.
-6. Ты не обрабатываешь оплату и не видишь статус существующих заказов.
-
-${channelRules}`;
-}
-
-const WEB_TOOLS: Anthropic.Tool[] = [
+const TOOLS: Anthropic.Tool[] = [
   {
-    name: "add_to_cart",
+    name: "update_brief",
     description:
-      "Добавить блюдо в корзину гостя на сайте. Вызывай только когда гость явно согласился заказать конкретную позицию.",
+      "Записать то, что уже известно о заказе. Вызывай после каждого ответа клиента, который добавил новую информацию. Передавай только те поля, которые узнал или уточнил на этом ходу.",
+    strict: true,
     input_schema: {
       type: "object",
-      properties: {
-        itemId: {
-          type: "string",
-          description: "Идентификатор блюда из меню, например carbonara",
-        },
-        quantity: { type: "integer", minimum: 1, maximum: 10, description: "Количество порций" },
-      },
-      required: ["itemId", "quantity"],
-    },
-  },
-  {
-    name: "show_category",
-    description: "Открыть гостю раздел меню на сайте.",
-    input_schema: {
-      type: "object",
+      additionalProperties: false,
       properties: {
         category: {
-          type: "string",
-          enum: CATEGORIES.map((c) => c.id),
-          description: "Идентификатор раздела меню",
+          type: ["string", "null"],
+          description: `Направление: ${CATEGORIES.map((c) => c.title).join(", ")}. Можно уточнением, например «кухня угловая».`,
         },
+        room: {
+          type: ["string", "null"],
+          description: "Помещение: комната, площадь, новостройка или готовый ремонт.",
+        },
+        sizes: {
+          type: ["string", "null"],
+          description: "Размеры своими словами или «точных размеров нет».",
+        },
+        wishes: {
+          type: ["string", "null"],
+          description: "Цвет, стиль, материалы, что должно поместиться.",
+        },
+        deadline: { type: ["string", "null"], description: "Желаемый срок." },
+        name: { type: ["string", "null"], description: "Как обращаться к клиенту." },
+        phone: { type: ["string", "null"], description: "Телефон для связи, как его назвал клиент." },
       },
-      required: ["category"],
+      required: ["category", "room", "sizes", "wishes", "deadline", "name", "phone"],
     },
   },
 ];
 
 const MAX_TOOL_ROUNDS = 3;
+const BRIEF_KEYS = ["category", "room", "sizes", "wishes", "deadline", "name", "phone"] as const;
 
-/** Выполняет инструмент и возвращает результат для модели + действие для клиента. */
-function runTool(
-  name: string,
-  input: Record<string, unknown>,
-): { result: string; action?: AssistantAction; isError?: boolean } {
-  if (name === "add_to_cart") {
-    const itemId = String(input.itemId ?? "");
-    const quantity = Math.max(1, Math.min(10, Number(input.quantity ?? 1) || 1));
-    const item = getMenuItem(itemId);
-    if (!item) {
-      return { result: `Ошибка: блюда с id «${itemId}» нет в меню.`, isError: true };
-    }
-    return {
-      result: `Добавлено в корзину: ${item.name} x${quantity}, ${formatPrice(item.price * quantity)}.`,
-      action: { type: "add_to_cart", itemId, quantity },
-    };
+/** Склеивает то, что модель записала, с уже собранным брифом. Пустое не затирает. */
+function mergeBrief(current: Brief, patch: Record<string, unknown>): Brief {
+  const merged: Brief = { ...current };
+  for (const key of BRIEF_KEYS) {
+    const value = patch[key];
+    if (typeof value === "string" && value.trim()) merged[key] = value.trim();
   }
-
-  if (name === "show_category") {
-    const category = String(input.category ?? "");
-    if (!CATEGORIES.some((c) => c.id === category)) {
-      return { result: `Ошибка: раздела «${category}» не существует.`, isError: true };
-    }
-    return { result: "Раздел открыт.", action: { type: "show_category", category } };
-  }
-
-  return { result: `Ошибка: неизвестный инструмент «${name}».`, isError: true };
+  return merged;
 }
 
 function textOf(blocks: Anthropic.ContentBlock[]): string {
@@ -159,14 +116,13 @@ function textOf(blocks: Anthropic.ContentBlock[]): string {
     .trim();
 }
 
-/** Один ход диалога с ассистентом, включая цикл вызова инструментов. */
+/** Один ход помощника, включая цикл вызова инструментов. */
 export async function askAssistant(
   history: ChatMessage[],
-  channel: Channel,
+  startingBrief: Brief,
 ): Promise<AssistantReply> {
   const anthropic = getClient();
-  const tools = channel === "web" ? WEB_TOOLS : [];
-  const actions: AssistantAction[] = [];
+  let brief = startingBrief;
 
   const messages: Anthropic.MessageParam[] = history.map((message) => ({
     role: message.role,
@@ -176,45 +132,55 @@ export async function askAssistant(
   for (let round = 0; round < MAX_TOOL_ROUNDS; round += 1) {
     const response = await anthropic.messages.create({
       model: AI_MODEL,
-      max_tokens: 700,
-      system: buildSystemPrompt(channel),
-      tools,
+      max_tokens: 1000,
+      // Сбор брифа — разговор простой, а ждать ответа в виджете никто не любит.
+      output_config: { effort: "low" },
+      system: buildSystemPrompt(),
+      tools: TOOLS,
       messages,
     });
+
+    if (response.stop_reason === "refusal") {
+      return {
+        text: `Давайте продолжим в WhatsApp — там ответят быстрее. Телефон ${COMPANY.phone}.`,
+        brief,
+        ready: briefIsReady(brief),
+      };
+    }
 
     const toolUses = response.content.filter(
       (block): block is Anthropic.ToolUseBlock => block.type === "tool_use",
     );
 
     if (toolUses.length === 0) {
-      return { text: textOf(response.content), actions };
+      return { text: textOf(response.content), brief, ready: briefIsReady(brief) };
     }
 
-    const results: Anthropic.ToolResultBlockParam[] = [];
-    for (const toolUse of toolUses) {
-      const outcome = runTool(toolUse.name, (toolUse.input ?? {}) as Record<string, unknown>);
-      if (outcome.action) actions.push(outcome.action);
-      results.push({
+    const results: Anthropic.ToolResultBlockParam[] = toolUses.map((toolUse) => {
+      brief = mergeBrief(brief, (toolUse.input ?? {}) as Record<string, unknown>);
+      return {
         type: "tool_result",
         tool_use_id: toolUse.id,
-        content: outcome.result,
-        is_error: outcome.isError,
-      });
-    }
+        content: briefIsReady(brief)
+          ? "Записано. Направления и телефона достаточно — заявку можно отправлять."
+          : "Записано.",
+      };
+    });
 
     messages.push({ role: "assistant", content: response.content });
     messages.push({ role: "user", content: results });
 
-    // Модель могла написать текст вместе с вызовом инструмента — если это был
-    // последний разрешённый раунд, отдаём то, что уже есть.
+    // Модель могла написать текст вместе с вызовом инструмента: если раунды
+    // кончились, отдаём то, что уже есть, вместо пустого пузыря.
     if (round === MAX_TOOL_ROUNDS - 1) {
       const partial = textOf(response.content);
       return {
-        text: partial || "Готово! Что-нибудь ещё?",
-        actions,
+        text: partial || "Записал. Что ещё расскажете о заказе?",
+        brief,
+        ready: briefIsReady(brief),
       };
     }
   }
 
-  return { text: "Готово! Что-нибудь ещё?", actions };
+  return { text: "Записал. Что ещё расскажете о заказе?", brief, ready: briefIsReady(brief) };
 }

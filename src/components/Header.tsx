@@ -1,82 +1,62 @@
-"use client";
-
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useCart } from "./CartContext";
-import { RESTAURANT } from "@/lib/restaurant";
+import { COMPANY, PHONE_HREF, WHATSAPP_GREETING, whatsappUrl } from "@/lib/company";
+import { Logomark, WhatsappIcon } from "./Icons";
 
 const NAV = [
-  { href: "/", label: "Главная" },
-  { href: "/menu", label: "Меню" },
-  { href: "/#contacts", label: "Контакты" },
+  { href: "#catalog", label: "Каталог" },
+  { href: "#works", label: "Как это выглядит" },
+  { href: "#brief", label: "Заявка" },
+  { href: "#contacts", label: "Контакты" },
 ];
 
 export function Header() {
-  const { count, hydrated } = useCart();
-  const pathname = usePathname();
-
   return (
-    <header className="sticky top-0 z-40 border-b border-cream-dark/80 bg-cream/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4 sm:px-6">
-        <Link href="/" className="flex items-baseline gap-2">
-          <span className="display text-2xl text-basil">Osteria</span>
-          <span className="display text-2xl text-terracotta">Bellini</span>
-        </Link>
+    <header className="sticky top-0 z-40 border-b border-line/70 bg-sand/85 backdrop-blur-md">
+      <div className="mx-auto flex h-20 max-w-6xl items-center gap-4 px-4 sm:px-6">
+        <a href="#main" className="flex min-w-0 items-center gap-3">
+          <Logomark className="h-10 w-10 shrink-0" />
+          <span className="min-w-0">
+            <span className="display block truncate text-lg leading-tight" translate="no">
+              {COMPANY.name}
+            </span>
+            <span className="block truncate text-xs tracking-wide text-ink-soft">
+              Мебель на заказ · {COMPANY.city}
+            </span>
+          </span>
+        </a>
 
-        <nav className="ml-auto hidden items-center gap-6 text-sm sm:flex">
-          {NAV.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={
-                pathname === link.href
-                  ? "text-basil font-semibold"
-                  : "text-ink-soft transition-colors hover:text-basil"
-              }
-            >
-              {link.label}
-            </Link>
-          ))}
-          <a
-            href={`tel:${RESTAURANT.phoneHref}`}
-            className="text-ink-soft transition-colors hover:text-basil"
-          >
-            {RESTAURANT.phone}
-          </a>
+        <nav aria-label="Разделы сайта" className="ml-auto hidden lg:block">
+          <ul className="flex items-center gap-7 text-sm font-medium">
+            {NAV.map((item) => (
+              <li key={item.href}>
+                <a
+                  href={item.href}
+                  className="text-ink-soft transition-colors duration-200 hover:text-walnut"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
         </nav>
 
-        <Link
-          href="/cart"
-          className="ml-auto inline-flex items-center gap-2 rounded-full bg-basil px-4 py-2 text-sm font-semibold text-cream transition-colors hover:bg-basil-dark sm:ml-0"
-          aria-label={`Корзина, ${count} позиций`}
-        >
-          <span aria-hidden>🛒</span>
-          <span className="hidden sm:inline">Корзина</span>
-          {hydrated && count > 0 && (
-            <span className="inline-flex min-w-6 justify-center rounded-full bg-cream px-1.5 text-xs font-bold text-basil">
-              {count}
-            </span>
-          )}
-        </Link>
-      </div>
-
-      {/* На узких экранах ссылки не помещаются в одну строку — выносим их отдельной полосой. */}
-      <nav className="flex gap-5 border-t border-cream-dark/70 px-4 py-2.5 text-sm sm:hidden">
-        {NAV.map((link) => (
-          <Link
-            key={link.href}
-            href={link.href}
-            className={
-              pathname === link.href ? "font-semibold text-basil" : "text-ink-soft"
-            }
+        <div className="ml-auto flex items-center gap-3 lg:ml-6">
+          <a
+            href={PHONE_HREF}
+            className="hidden whitespace-nowrap text-sm font-semibold tabular-nums transition-colors duration-200 hover:text-walnut sm:block"
           >
-            {link.label}
-          </Link>
-        ))}
-        <a href={`tel:${RESTAURANT.phoneHref}`} className="ml-auto text-ink-soft">
-          Позвонить
-        </a>
-      </nav>
+            {COMPANY.phone}
+          </a>
+          <a
+            href={whatsappUrl(WHATSAPP_GREETING)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hidden items-center gap-2 rounded-full bg-walnut px-5 py-2.5 text-sm font-semibold text-sand transition-colors duration-200 hover:bg-walnut-deep md:inline-flex"
+          >
+            <WhatsappIcon className="h-4 w-4" />
+            Написать
+          </a>
+        </div>
+      </div>
     </header>
   );
 }

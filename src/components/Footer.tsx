@@ -1,65 +1,49 @@
-import Link from "next/link";
-import { RESTAURANT } from "@/lib/restaurant";
+import { COMPANY, PHONE_HREF } from "@/lib/company";
+import { Logomark } from "./Icons";
 
 export function Footer() {
   return (
-    <footer id="contacts" className="mt-24 border-t border-cream-dark bg-cream-dark/50">
-      <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 sm:px-6 md:grid-cols-3">
-        <div>
-          <div className="display text-2xl">
-            <span className="text-basil">Osteria</span> <span className="text-terracotta">Bellini</span>
+    <footer className="border-t border-line bg-sand-deep">
+      {/* Нижний отступ — чтобы липкая панель на телефоне не накрывала текст. */}
+      <div className="mx-auto max-w-6xl px-4 pb-28 pt-12 sm:px-6 md:pb-12">
+        <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+          <div className="flex items-center gap-3">
+            <Logomark className="h-10 w-10 shrink-0" />
+            <div>
+              <p className="display text-lg leading-tight" translate="no">
+                {COMPANY.name}
+              </p>
+              <p className="text-sm text-ink-soft">{COMPANY.tagline}</p>
+            </div>
           </div>
-          <p className="mt-3 max-w-xs text-sm leading-relaxed text-ink-soft">
-            {RESTAURANT.tagline}. Работаем с 2014 года, тесто ставим каждое утро, пасту катаем
-            вручную.
+
+          <address className="not-italic text-sm leading-relaxed text-ink-soft">
+            <p>{COMPANY.address}</p>
+            <p>{COMPANY.hours}</p>
+            <p className="mt-1">
+              <a href={PHONE_HREF} className="font-semibold text-ink tabular-nums hover:text-walnut">
+                {COMPANY.phone}
+              </a>
+              <span className="ml-2">— телефон, WhatsApp и Viber</span>
+            </p>
+          </address>
+
+          <p className="text-sm text-ink-soft">
+            <a
+              href={COMPANY.mapsUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline decoration-line underline-offset-4 transition-colors duration-200 hover:text-walnut"
+            >
+              Карточка на Яндекс Картах
+            </a>
           </p>
         </div>
 
-        <div className="text-sm">
-          <h3 className="display text-lg">Контакты</h3>
-          <ul className="mt-3 space-y-2 text-ink-soft">
-            <li>{RESTAURANT.address}</li>
-            <li>{RESTAURANT.metro}</li>
-            <li>
-              <a className="hover:text-basil" href={`tel:${RESTAURANT.phoneHref}`}>
-                {RESTAURANT.phone}
-              </a>
-            </li>
-            <li>
-              <a className="hover:text-basil" href={`mailto:${RESTAURANT.email}`}>
-                {RESTAURANT.email}
-              </a>
-            </li>
-            <li>
-              <a className="hover:text-basil" href={RESTAURANT.telegram}>
-                Наш Telegram-бот
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <div className="text-sm">
-          <h3 className="display text-lg">Часы работы</h3>
-          <ul className="mt-3 space-y-2 text-ink-soft">
-            {RESTAURANT.hours.map((row) => (
-              <li key={row.days} className="flex justify-between gap-4">
-                <span>{row.days}</span>
-                <span className="tabular-nums">{row.time}</span>
-              </li>
-            ))}
-          </ul>
-          <Link
-            href="/menu"
-            className="mt-5 inline-block rounded-full border border-basil px-4 py-2 font-semibold text-basil transition-colors hover:bg-basil hover:text-cream"
-          >
-            Смотреть меню
-          </Link>
-        </div>
-      </div>
-
-      <div className="border-t border-cream-dark px-4 py-5 text-center text-xs text-ink-soft sm:px-6">
-        © {new Date().getFullYear()} {RESTAURANT.name}. Демонстрационный проект: онлайн-оплата не
-        подключена, заказ подтверждает менеджер по телефону.
+        <p className="mt-10 border-t border-line pt-6 text-xs text-ink-soft">
+          © {new Date().getFullYear()} {COMPANY.name}, {COMPANY.city}. Мебель по индивидуальным
+          размерам.
+        </p>
       </div>
     </footer>
   );

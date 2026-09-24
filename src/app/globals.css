@@ -1,18 +1,20 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #fbf7f0;
-  --color-cream-dark: #f2ebe0;
-  --color-ink: #221d17;
-  --color-ink-soft: #5c534a;
-  --color-basil: #2f5d3f;
-  --color-basil-dark: #23472f;
-  --color-terracotta: #b6482f;
-  --color-terracotta-soft: #e8d3cb;
-  --color-gold: #c8912f;
+  /* Тёплая «мебельная» палитра: песок, орех, латунь. */
+  --color-sand: #f7f3ed;
+  --color-sand-deep: #efe7da;
+  --color-surface: #ffffff;
+  --color-ink: #1b1613;
+  --color-ink-soft: #6d6055;
+  --color-line: #e2d8c9;
+  --color-walnut: #9c5f33;
+  --color-walnut-deep: #7a4726;
+  --color-brass: #b8892b;
+  --color-night: #221b16;
 
-  --font-display: var(--font-serif), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-display: var(--font-playfair), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
 :root {
@@ -21,32 +23,69 @@
 
 html {
   scroll-behavior: smooth;
+  /* Задаём осознанно: синий блик по умолчанию выбивается из тёплой палитры. */
+  -webkit-tap-highlight-color: rgba(156, 95, 51, 0.16);
 }
 
 body {
-  background-color: var(--color-cream);
+  background-color: var(--color-sand);
   color: var(--color-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
-/* Тонкая «бумажная» текстура фона — дешевле картинки и не грузит сеть. */
-.paper {
-  background-image:
-    radial-gradient(circle at 15% 20%, rgba(182, 72, 47, 0.05), transparent 45%),
-    radial-gradient(circle at 85% 10%, rgba(47, 93, 63, 0.06), transparent 40%);
+/*
+ * Горизонтальный оверфлоу гасим на html, а не на body: overflow на body
+ * делает его скролл-контейнером, и липкая шапка перестаёт липнуть к окну.
+ */
+html {
+  overflow-x: hidden;
+}
+
+/* Единый видимый фокус: нигде не снимаем обводку, не дав замены. */
+:focus-visible {
+  outline: 2px solid var(--color-walnut);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Якоря разделов не должны уезжать под липкую шапку. */
+[id] {
+  scroll-margin-top: 5.5rem;
 }
 
 .display {
   font-family: var(--font-display);
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/*
+ * Бумажное зерно поверх фона. Инлайновый SVG вместо картинки: ~300 байт,
+ * не ходит в сеть и не тянет за собой лишний запрос.
+ */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+}
+
+/* Мягкое «тёплое» свечение под герой-блоком и тёмными секциями. */
+.glow {
+  background-image:
+    radial-gradient(60rem 32rem at 12% -10%, rgba(156, 95, 51, 0.16), transparent 60%),
+    radial-gradient(48rem 28rem at 92% 6%, rgba(184, 137, 43, 0.13), transparent 62%);
 }
 
 @keyframes rise {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -55,14 +94,21 @@ body {
 }
 
 .rise {
-  animation: rise 0.28s ease-out both;
+  animation: rise 0.36s ease-out both;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .rise {
     animation: none;
   }
-  html {
-    scroll-behavior: auto;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
