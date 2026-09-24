@@ -1,0 +1,52 @@
+name: Deploy demo to GitHub Pages
+
+on:
+  push:
+    branches: [claude/upbeat-albattani-gdleul]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Параллельные выкладки друг друга не роняют: очередь, без отмены начатой.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Статическая сборка в out/: помощник идёт по заранее заданным вопросам,
+      # ключ не нужен, плюс проставляется noindex и пометка о макете.
+      - run: npm run export
+
+      # enablement: true включает Pages сам, если они ещё не включены.
+      - uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
