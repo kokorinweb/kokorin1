@@ -58,12 +58,17 @@ export function Hero() {
           </ul>
         </div>
 
-        <div className="relative">
+        {/*
+          На телефоне веер образцов не показываем: он ничего не объясняет,
+          а отодвигает кнопки и факты на пол-экрана вниз. Экран узкий —
+          первым делом человек должен увидеть, что это и куда нажать.
+        */}
+        <div className="relative hidden lg:block">
           <div
             className="absolute inset-6 rounded-[2.5rem] bg-walnut/10 blur-2xl"
             aria-hidden="true"
           />
-          <MaterialsBoard className="rise relative h-auto w-full mx-auto max-w-xl drop-shadow-xl" />
+          <MaterialsBoard className="rise relative mx-auto h-auto w-full max-w-xl drop-shadow-xl" />
         </div>
       </div>
     </section>

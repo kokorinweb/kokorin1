@@ -6,7 +6,7 @@
  * а потом возвращаем обратно — в том числе если сборка упала.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, renameSync, rmSync } from "node:fs";
+import { existsSync, renameSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 
 const root = process.cwd();
@@ -29,5 +29,9 @@ try {
 } finally {
   if (hasApi) renameSync(parked, api);
 }
+
+// GitHub Pages прогоняет содержимое через Jekyll и выбрасывает папки на
+// подчёркивание — а Next кладёт всё в _next. Этот файл выключает Jekyll.
+writeFileSync(path.join(root, "out", ".nojekyll"), "");
 
 console.log("\nГотово: out/");
